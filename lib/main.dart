@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/login.dart'; 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login.dart';  
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://bmvffhdlzcuybhdbhucq.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdmZmaGRsemN1eWJoZGJodWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMDQ1MTksImV4cCI6MjA1MTg4MDUxOX0.TMqX_WNxquvUgXdSbfJntI22FOWgw3-1vVNzMF6bxoU',
+    url: 'https://ejsimgpbrinksndwaann.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqc2ltZ3Bicmlua3NuZHdhYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzU0MTgsImV4cCI6MjA1MTkxMTQxOH0.99-o0u0wykWd3vSO_7kp6nDgKg3zFmvMDWFgzSQnNmw', 
   );
   runApp(MyApp());
 }
@@ -15,44 +15,63 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.purple),
       home: HomePage(),
     );
   }
 }
 
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome'),
-        backgroundColor: Colors.purple,
-      ),
+      backgroundColor: Color(0xFF6D4C41),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
-              child: Text('Login'),
+            Image.asset('asset/image/Untitled_design__1_-removebg-preview (1).png'),
+            SizedBox(height: 40),
+            Text(
+              'WELCOME',
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                color: Color(0xFF2D2D30),
+              ),
+              textAlign: TextAlign.center,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterPage()),
-                );
-              },
-              child: Text('Register'),
+            SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                children: [
+                  _buildButton(context, 'Login', LoginPage()),
+                  SizedBox(height: 20),
+                  _buildButton(context, 'Register', RegisterPage()),
+                ],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context, String text, Widget page) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.brown[800],
+          padding: EdgeInsets.symmetric(vertical: 16),
+          textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        child: Text(text, style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -62,13 +81,8 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Registrasi'),
-        backgroundColor: Colors.purple,
-      ),
-      body: Center(
-        child: Text(''),
-      ),
+      appBar: AppBar(title: Text('Register'), backgroundColor: Colors.white),
+      body: Center(child: Text('Registration Page')),
     );
   }
 }
