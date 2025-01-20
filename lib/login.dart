@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'homepenjualan.dart'; // Import Home Penjualan
+import 'homepenjualan.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  MyHomePage(title: 'Home Penjualan')), // Arahkan ke Home Penjualan
+                  menupage(title: 'Home Penjualan')), 
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

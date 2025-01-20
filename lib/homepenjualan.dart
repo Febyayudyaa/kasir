@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'login.dart';
+import 'pelanggan/index.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://ejsimgpbrinksndwaann.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqc2ltZ3Bicmlua3NuZHdhYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzU0MTgsImV4cCI6MjA1MTkxMTQxOH0.99-o0u0wykWd3vSO_7kp6nDgKg3zFmvMDWFgzSQnNmw',
+  );
+
   runApp(MaterialApp(
     title: 'Flutter Demo',
     theme: ThemeData(primarySwatch: Colors.blue),
-    home: MyHomePage(title: 'Home Penjualan'),
+    home: menupage(title: 'Home Penjualan'),
   ));
 }
 
-class MyHomePage extends StatefulWidget {
+class menupage extends StatefulWidget {
   final String title;
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  menupage({Key? key, required this.title}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _menupageState createState() => _menupageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _menupageState extends State<menupage> {
   String? selectedOrderType;
-  bool isMakananVisible = false;
   Map<String, int> cart = {}; 
 
   @override
@@ -29,11 +37,26 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         backgroundColor: Colors.brown[800],
         foregroundColor: Colors.white,
-        leading: IconButton(icon: Icon(Icons.menu), onPressed: () {}),
+        leading: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'logout') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                value: 'logout',
+                child: Text('Logout'),
+              ),
+            ];
+          },
+        ),
         actions: [
           IconButton(icon: Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: Icon(Icons.grid_view), onPressed: () {}),
-          IconButton(icon: Icon(Icons.zoom_out_map), onPressed: () {}),
         ],
       ),
       body: Column(
@@ -42,71 +65,9 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ['Semua', 'Makanan', 'Minuman', 'Customer']
-                  .map((label) => _buildCategoryButton(label))
+              children: ['Detail Jual', 'Makanan', 'Penjualan', 'Customer']
+                  .map((label) => _buildCategoryButton(label, context))
                   .toList(),
-            ),
-          ),
-          Visibility(
-            visible: isMakananVisible,
-            child: Expanded(
-              child: GridView.builder(
-                padding: EdgeInsets.all(16),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, 
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.8, 
-                ),
-                itemCount: 5, 
-                itemBuilder: (context, index) {
-                  String name;
-                  String imagePath;
-                  switch (index) {
-                    case 0:
-                      name = 'Choco Chip Cookies';
-                      imagePath = 'asset/image/choco.jpg';
-                      break;
-                    case 1:
-                      name = 'Oatmeal Raisin Cookies';
-                      imagePath = 'asset/image/otml.jpg';
-                      break;
-                    case 2:
-                      name = 'Birthday Cake Cookies';
-                      imagePath = 'asset/image/bckjpg.jpg';
-                      break;
-                    case 3:
-                      name = 'Red Velvet Cookies';
-                      imagePath = 'asset/image/rdvjpg.jpg';
-                      break;
-                    case 4:
-                      name = 'Matcha Cookies';
-                      imagePath = 'asset/image/mtcha.jpg';
-                      break;
-                    default:
-                      name = 'Unknown';
-                      imagePath = '';
-                  }
-
-                  return _buildCategoryItem(name, imagePath);
-                },
-              ),
-            ),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {}),
-                    IconButton(icon: Icon(Icons.person), onPressed: () {}),
-                  ],
-                ),
-                Text('2 Barang = Rp'),
-              ],
             ),
           ),
         ],
@@ -114,13 +75,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ElevatedButton _buildCategoryButton(String label) {
+  ElevatedButton _buildCategoryButton(String label, BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        if (label == 'Makanan') {
-          setState(() {
-            isMakananVisible = !isMakananVisible;
-          });
+        if (label == 'Customer') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PelangganTab()),
+          );
         }
       },
       style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[800]),
@@ -128,96 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
         label,
         style: TextStyle(color: Colors.white),
       ),
-    );
-  }
-
-  Widget _buildCategoryItem(String name, String imagePath) {
-    return GestureDetector(
-      onTap: () {
-        _showQuantityDialog(name);
-      },
-      child: Card(
-        color: Colors.brown[100],
-        elevation: 4,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Image.asset(imagePath, fit: BoxFit.cover), 
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                name,
-                style: TextStyle(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showQuantityDialog(String productName) {
-    int quantity = cart[productName] ?? 0;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Pilih Jumlah untuk $productName'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Jumlah yang ingin dibeli:'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.remove),
-                    onPressed: () {
-                      if (quantity > 0) {
-                        setState(() {
-                          cart[productName] = quantity - 1;
-                        });
-                      }
-                    },
-                  ),
-                  Text(quantity.toString()),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {
-                      setState(() {
-                        cart[productName] = quantity + 1;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Tutup'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  if (quantity > 0) {
-                    cart[productName] = quantity;
-                  }
-                });
-              },
-              child: Text('Tambahkan ke Keranjang'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
