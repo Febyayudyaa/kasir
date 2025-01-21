@@ -37,7 +37,8 @@ class _PelangganTabState extends State<PelangganTab> {
     }
   }
 
-  Future<void> deletePelanggan(int id) async {
+  Future<void> deletePelanggan(int? id) async {
+    if (id == null) return;
     try {
       await Supabase.instance.client.from('pelanggan').delete().eq('PelangganID', id);
       fetchPelanggan();
@@ -49,9 +50,23 @@ class _PelangganTabState extends State<PelangganTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Daftar Pelanggan'),
+        backgroundColor: Colors.brown[800],
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); 
+          },
+        ),
+      ),
       body: isLoading
           ? Center(
-              child: LoadingAnimationWidget.twoRotatingArc(color: Colors.brown, size: 30),
+              child: LoadingAnimationWidget.twoRotatingArc(
+                color: Colors.brown,
+                size: 30,
+              ),
             )
           : pelanggan.isEmpty
               ? Center(
@@ -78,36 +93,33 @@ class _PelangganTabState extends State<PelangganTab> {
                             Text(
                               langgan['NamaPelanggan'] ?? 'Pelanggan tidak tersedia',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            SizedBox(height: 4),
                             Text(
-                              langgan['Alamat'] ?? 'Alamat Tidak tersedia',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black,
-                              ),
+                              langgan['Alamat'] ?? 'Alamat tidak tersedia',
+                              style: TextStyle(fontSize: 14, color: Colors.black),
                             ),
-                            SizedBox(height: 2),
+                            SizedBox(height: 4),
                             Text(
                               langgan['NomorTelepon'] ?? 'Tidak tersedia',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12,
-                              ),
-                              textAlign: TextAlign.justify,
+                              style: TextStyle(fontSize: 14),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit, color: Color(0xFF8D6E63)),
+                                  icon: Icon(Icons.edit, color: Color(0xFF8D6E63)),
                                   onPressed: () {
-                                    final PelangganID = langgan['PelangganID'] ?? 0; 
-                                    if (PelangganID != 0) {
+                                    final pelangganID = langgan['PelangganID'] as int?;
+                                    if (pelangganID != null) {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => EditPelanggan(PelangganID: PelangganID)
+                                          builder: (context) =>
+                                              EditPelanggan(PelangganID: pelangganID),
                                         ),
                                       );
                                     } else {
@@ -116,25 +128,26 @@ class _PelangganTabState extends State<PelangganTab> {
                                   },
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Color(0xFF8D6E63)),
+                                  icon: Icon(Icons.delete, color: Color(0xFF8D6E63)),
                                   onPressed: () {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
-                                          title: const Text('Hapus Pelanggan'),
-                                          content: const Text('Apakah Anda yakin ingin menghapus pelanggan ini?'),
+                                          title: Text('Hapus Pelanggan'),
+                                          content: Text(
+                                              'Apakah Anda yakin ingin menghapus pelanggan ini?'),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.pop(context),
-                                              child: const Text('Batal'),
+                                              child: Text('Batal'),
                                             ),
                                             TextButton(
                                               onPressed: () {
-                                                deletePelanggan(langgan['PelangganID']);
+                                                deletePelanggan(langgan['PelangganID'] as int?);
                                                 Navigator.pop(context);
                                               },
-                                              child: const Text('Hapus'),
+                                              child: Text('Hapus'),
                                             ),
                                           ],
                                         );

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
 import 'pelanggan/index.dart';
 import 'produk/index.dart';
+import 'penjualan/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -42,18 +42,30 @@ class _UpdateProdukPageState extends State<UpdateProdukPage> {
     }
   }
 
-  Future<void> updateProduk() async {
+    Future<void> updateProduk() async {
     if (_formKey.currentState!.validate()) {
-      final response = await Supabase.instance.client.from('ProdukID').update({
-        'NamaProduk': _NamaProduk.text,
-        'Harga': double.tryParse(_Harga.text) ?? 0,
-        'Stok': int.tryParse(_Stok.text) ?? 0,
-      }).eq('ProdukID', widget.ProdukID);
-      if (response != null) {
-        Navigator.pop(context);
+      try {
+        final response = await Supabase.instance.client.from('produk').update({
+          'NamaProduk': _NamaProduk.text,
+          'Harga': double.tryParse(_Harga.text) ?? 0,
+          'Stok': int.tryParse(_Stok.text) ?? 0,
+        }).eq('ProdukID', widget.ProdukID);
+
+        if (response.error == null) {
+          Navigator.pop(context, true); 
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response.error!.message}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

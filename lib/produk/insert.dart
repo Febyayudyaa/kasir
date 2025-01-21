@@ -24,18 +24,18 @@ class _AddProdukPageState extends State<AddProdukPage> {
 
   Future<void> tambahProduk() async {
     if (_formKey.currentState!.validate()) {
-      final NamaProduk = _NamaProdukController.text.trim();
-      final Harga = double.tryParse(_HargaController.text) ?? 0;
-      final Stok = int.tryParse(_StokController.text) ?? 0;
+      final nama = _NamaProdukController.text.trim();
+      final harga = double.tryParse(_HargaController.text) ?? 0;
+      final stok = int.tryParse(_StokController.text) ?? 0;
 
       try {
         final response = await Supabase.instance.client
-            .from('ProdukID')
+            .from('produk')
             .insert([
               {
-                'NamaProduk': NamaProduk,
-                'Harga': Harga,
-                'Stok': Stok,
+                'NamaProduk': nama,
+                'Harga': harga,
+                'Stok': stok,
               }
             ])
             .select()

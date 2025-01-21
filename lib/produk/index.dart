@@ -4,12 +4,13 @@ import 'package:kasirr/produk/insert.dart';
 import 'package:kasirr/produk/update.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:kasirr/homepenjualan.dart';
 
 void main() {
   runApp(MaterialApp(
     title: 'Flutter Demo',
     theme: ThemeData(primarySwatch: Colors.brown),
-    home: menupage(title: 'Home Penjualan'),
+    home: menupage(title: 'Home Produk'),
   ));
 }
 
@@ -29,24 +30,13 @@ class _menupageState extends State<menupage> {
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.brown[800],
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => menupage()),
-              );
-            },
-          ),
-        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Selamat Datang di Halaman Penjualan!',
+              'Selamat Datang di Halaman Pembelian Produk!',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             ElevatedButton(
@@ -86,6 +76,25 @@ class _ProdukTabState extends State<ProdukTab> {
     fetchProduk();
   }
 
+      Future<void> addProduk(String nama, double harga, int stok) async {
+      try {
+        final response = await Supabase.instance.client.from('produk').insert([
+          {
+            'NamaProduk': nama,
+            'Harga': harga,
+            'Stok': stok,
+          }
+        ]);
+        if (response.error == null) {
+          print('Produk berhasil ditambahkan');
+        } else {
+          print('Error menambahkan produk: ${response.error!.message}');
+        }
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+    
   Future<void> fetchProduk() async {
     setState(() {
       isLoading = true;
@@ -107,10 +116,11 @@ class _ProdukTabState extends State<ProdukTab> {
     }
   }
 
+  
   Future<void> deleteProduk(int id) async {
     try {
       await Supabase.instance.client.from('produk').delete().eq('ProdukID', id);
-      fetchProduk(); 
+      fetchProduk();
     } catch (e) {
       print('Error: $e');
     }
@@ -122,12 +132,12 @@ class _ProdukTabState extends State<ProdukTab> {
       appBar: AppBar(
         title: Text('Daftar Produk'),
         backgroundColor: Colors.brown[800],
+        foregroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.pop(
               context,
-              MaterialPageRoute(builder: (context) => menupage(title: 'Home Penjualan')),
             );
           },
         ),
@@ -152,26 +162,85 @@ class _ProdukTabState extends State<ProdukTab> {
                   itemBuilder: (context, index) {
                     final prd = produk[index];
                     return InkWell(
-                      onTap: () {
-                        showDialog(
+                      onTap: () async {
+                        int jumlah = 1;
+                        final stok = prd['Stok'] ?? 0;
+
+                        await showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text('Produk: ${prd['NamaProduk']}'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Harga: ${prd['Harga']}'),
-                                Text('Stok: ${prd['Stok']}'),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: Text('Tutup'))
-                            ],
-                          ),
+                          builder: (context) {
+                            return StatefulBuilder(
+                              builder: (context, setState) {
+                                return AlertDialog(
+                                  title: Text('Produk: ${prd['NamaProduk']}'),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Harga: ${prd['Harga']}'),
+                                      Text('Stok Tersedia: $stok'),
+                                      SizedBox(height: 16),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.remove,
+                                                color: Colors.brown[800]),
+                                            onPressed: jumlah > 1
+                                                ? () {
+                                                    setState(() {
+                                                      jumlah--;
+                                                    });
+                                                  }
+                                                : null,
+                                          ),
+                                          Text(
+                                            '$jumlah',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.add,
+                                                color: Colors.brown[800]),
+                                            onPressed: jumlah < stok
+                                                ? () {
+                                                    setState(() {
+                                                      jumlah++;
+                                                    });
+                                                  }
+                                                : null,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context),
+                                      child: Text('Batal'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context, jumlah);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.brown[800],
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: Text('Tambahkan'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
                         );
+
+                        if (jumlah > 0 && jumlah <= stok) {
+                          print('Produk: ${prd['NamaProduk']} - Jumlah: $jumlah');
+                        }
                       },
                       child: Card(
                         elevation: 4,
@@ -191,13 +260,64 @@ class _ProdukTabState extends State<ProdukTab> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                prd['Harga']?.toString() ?? 'Harga Tidak Tersedia',
+                                prd['Harga']?.toString() ??
+                                    'Harga Tidak Tersedia',
                                 style: TextStyle(fontSize: 16),
                               ),
                               SizedBox(height: 8),
                               Text(
-                                prd['Stok']?.toString() ?? 'Stok Tidak Tersedia',
+                                prd['Stok']?.toString() ??
+                                    'Stok Tidak Tersedia',
                                 style: TextStyle(fontSize: 16),
+                              ),
+                              Spacer(),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit, color: Colors.brown),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              UpdateProdukPage(
+                                                  ProdukID: prd['ProdukID']),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text('Konfirmasi'),
+                                            content: Text(
+                                                'Apakah Anda yakin ingin menghapus produk ini?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: Text('Batal'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  deleteProduk(
+                                                      prd['ProdukID']);
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text('Hapus'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ],
                           ),
