@@ -1,115 +1,127 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class InsertProdukPage extends StatefulWidget {
+class AddProdukPage extends StatefulWidget {
+  const AddProdukPage({super.key});
+
   @override
-  _InsertProdukPageState createState() => _InsertProdukPageState();
+  State<AddProdukPage> createState() => _AddProdukPageState();
 }
 
-class _InsertProdukPageState extends State<InsertProdukPage> {
+class _AddProdukPageState extends State<AddProdukPage> {
+  final _NamaProdukController = TextEditingController();
+  final _HargaController = TextEditingController();
+  final _StokController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _namaController = TextEditingController();
-  final _deskripsiController = TextEditingController();
-  final _hargaController = TextEditingController();
-  final _stokController = TextEditingController();
 
-  final SupabaseClient supabase = Supabase.instance.client;
+  @override
+  void dispose() {
+    _NamaProdukController.dispose();
+    _HargaController.dispose();
+    _StokController.dispose();
+    super.dispose();
+  }
 
-  Future<void> _saveData() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> tambahProduk() async {
+    if (_formKey.currentState!.validate()) {
+      final NamaProduk = _NamaProdukController.text.trim();
+      final Harga = double.tryParse(_HargaController.text) ?? 0;
+      final Stok = int.tryParse(_StokController.text) ?? 0;
 
-    final nama = _namaController.text;
-    final deskripsi = _deskripsiController.text;
-    final harga = double.tryParse(_hargaController.text);
-    final stok = int.tryParse(_stokController.text);
+      try {
+        final response = await Supabase.instance.client
+            .from('ProdukID')
+            .insert([
+              {
+                'NamaProduk': NamaProduk,
+                'Harga': Harga,
+                'Stok': Stok,
+              }
+            ])
+            .select()
+            .single();
 
-    if (harga == null || stok == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Harga dan Stok harus valid!')),
-      );
-      return;
-    }
-
-    try {
-      final response = await supabase.from('produk').insert({
-        'NamaProduk': nama,
-        'Deskripsi': deskripsi,
-        'Harga': harga,
-        'Stok': stok,
-      }).select();
-
-      if (response.isNotEmpty) {
+        if (response != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Produk berhasil ditambahkan!')),
+          );
+          Navigator.pop(context, true); 
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Data berhasil disimpan!')),
+          SnackBar(content: Text('Gagal menambahkan produk: $e')),
         );
-        Navigator.pop(context, {
-          'NamaProduk': nama,
-          'Deskripsi': deskripsi,
-          'Harga': harga,
-          'Stok': stok,
-        });
-      } else {
-        throw Exception('Gagal menyimpan data.');
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan: $e')),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tambah Produk')),
+      appBar: AppBar(
+        title: Text('Tambah Produk'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
-                controller: _namaController,
-                decoration: InputDecoration(labelText: 'Nama Produk'),
-                validator: (value) => value == null || value.isEmpty ? 'Nama produk tidak boleh kosong' : null,
+                controller: _NamaProdukController,
+                decoration: InputDecoration(
+                  labelText: 'Nama Produk',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama produk tidak boleh kosong';
+                  }
+                  return null;
+                },
               ),
+              SizedBox(height: 16),
               TextFormField(
-                controller: _deskripsiController,
-                decoration: InputDecoration(labelText: 'Deskripsi'),
-                validator: (value) => value == null || value.isEmpty ? 'Deskripsi tidak boleh kosong' : null,
-              ),
-              TextFormField(
-                controller: _hargaController,
-                decoration: InputDecoration(labelText: 'Harga'),
+                controller: _HargaController,
                 keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Harga',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Harga tidak boleh kosong';
                   }
-                  final parsedValue = double.tryParse(value);
-                  if (parsedValue == null) {
+                  if (double.tryParse(value) == null) {
                     return 'Harga harus berupa angka';
                   }
                   return null;
                 },
               ),
+              SizedBox(height: 16),
               TextFormField(
-                controller: _stokController,
-                decoration: InputDecoration(labelText: 'Stok'),
+                controller: _StokController,
                 keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Stok',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Stok tidak boleh kosong';
                   }
-                  final parsedValue = int.tryParse(value);
-                  if (parsedValue == null) {
+                  if (int.tryParse(value) == null) {
                     return 'Stok harus berupa angka';
                   }
                   return null;
                 },
               ),
-              SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveData, child: Text('Simpan')),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: tambahProduk,
+                child: Text('Tambah'),
+              ),
             ],
           ),
         ),

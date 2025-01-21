@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
 import 'pelanggan/index.dart';
+import 'produk/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,11 @@ class _menupageState extends State<menupage> {
             context,
             MaterialPageRoute(builder: (context) => PelangganTab()),
           );
+        } else if (label == 'Makanan') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProdukTab()),
+            );
         }
       },
       style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[800]),

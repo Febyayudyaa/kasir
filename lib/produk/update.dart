@@ -3,107 +3,93 @@ import 'package:kasirr/homepenjualan.dart';
 import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Produk {
-  String produkID;
-  String nama;
-  double harga;
-  int stok;
 
-  Produk({
-    required this.produkID,
-    required this.nama,
-    required this.harga,
-    required this.stok,
-  });
+class UpdateProdukPage extends StatefulWidget {
+  final int ProdukID;
+  const UpdateProdukPage({super.key, required this.ProdukID});
 
-  factory Produk.fromJson(Map<String, dynamic> json) {
-    return Produk(
-      produkID: json['ProdukID'],
-      nama: json['NamaProduk'],
-      harga: json['Harga'].toDouble(),
-      stok: json['Stok'],
-    );
-  }
+  @override
+  State<UpdateProdukPage> createState() => _UpdateProdukPageState();
 }
 
-class UpdateProdukPage extends StatelessWidget {
-  final Produk produk;
+class _UpdateProdukPageState extends State<UpdateProdukPage> {
+  final _NamaProduk = TextEditingController();
+  final _Harga = TextEditingController();
+  final _Stok = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  UpdateProdukPage({required this.produk});
-  
-  final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _hargaController = TextEditingController();
-  final TextEditingController _stokController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    fetchProduk();
+  }
 
-  final SupabaseClient supabase = Supabase.instance.client;
+  Future<void> fetchProduk() async {
+    try {
+      final data = await Supabase.instance.client
+          .from('produk')
+          .select()
+          .eq('ProdukID', widget.ProdukID)
+          .single();
+      setState(() {
+        _NamaProduk.text = data['NamaProduk'] ?? '';
+        _Harga.text = data['Harga']?.toString() ?? '';
+        _Stok.text = data['Stok']?.toString() ?? '';
+      });
+    } catch (error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $error')));
+    }
+  }
+
+  Future<void> updateProduk() async {
+    if (_formKey.currentState!.validate()) {
+      final response = await Supabase.instance.client.from('ProdukID').update({
+        'NamaProduk': _NamaProduk.text,
+        'Harga': double.tryParse(_Harga.text) ?? 0,
+        'Stok': int.tryParse(_Stok.text) ?? 0,
+      }).eq('ProdukID', widget.ProdukID);
+      if (response != null) {
+        Navigator.pop(context);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    _namaController.text = produk.nama;
-    _hargaController.text = produk.harga.toString();
-    _stokController.text = produk.stok.toString();
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Edit Produk'),
-        backgroundColor: Colors.brown[800],
-      ),
+      appBar: AppBar(title: Text('Update Produk')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _namaController,
-              decoration: InputDecoration(labelText: 'Nama Produk'),
-            ),
-            TextField(
-              controller: _hargaController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Harga Produk'),
-            ),
-            TextField(
-              controller: _stokController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Stok Produk'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final nama = _namaController.text;
-                final harga = double.tryParse(_hargaController.text);
-                final stok = int.tryParse(_stokController.text);
-
-                if (nama.isNotEmpty && harga != null && stok != null) {
-                  try {
-                    final response = await supabase.from('produk').update({
-                      'NamaProduk': nama,
-                      'Harga': harga,
-                      'Stok': stok,
-                    }).eq('ProdukID', produk.produkID);
-
-                    if (response.error == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Produk berhasil diperbarui!')),
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      throw Exception('Gagal memperbarui produk.');
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Terjadi kesalahan: $e')),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Mohon lengkapi semua data dengan benar!')),
-                  );
-                }
-              },
-              child: Text('Update Produk'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[800]),
-            ),
-          ],
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _NamaProduk,
+                decoration: InputDecoration(labelText: 'Nama Produk'),
+                validator: (value) =>
+                    value!.isEmpty ? 'Nama produk tidak boleh kosong' : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _Harga,
+                decoration: InputDecoration(labelText: 'Harga'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _Stok,
+                decoration: InputDecoration(labelText: 'Stok'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: updateProduk,
+                child: Text('Update Produk'),
+              ),
+            ],
+          ),
         ),
       ),
     );

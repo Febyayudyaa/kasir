@@ -1,39 +1,83 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'insert.dart';
+import 'package:kasirr/produk/insert.dart';
 import 'package:kasirr/produk/update.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Produk {
-  String ProdukID;
-  String NamaProduk;
-  double Harga;
-  int Stok;
+void main() {
+  runApp(MaterialApp(
+    title: 'Flutter Demo',
+    theme: ThemeData(primarySwatch: Colors.brown),
+    home: menupage(title: 'Home Penjualan'),
+  ));
+}
 
-  Produk({
-    required this.ProdukID,
-    required this.NamaProduk,
-    required this.Harga,
-    required this.Stok,
-  });
+class menupage extends StatefulWidget {
+  final String title;
 
-  factory Produk.fromJson(Map<String, dynamic> json) {
-    return Produk(
-      ProdukID: json['ProdukID'].toString(),
-      NamaProduk: json['NamaProduk'],
-      Harga: (json['Harga'] as num).toDouble(),
-      Stok: json['Stok'] as int,
+  const menupage({super.key, required this.title});
+
+  @override
+  State<menupage> createState() => _menupageState();
+}
+
+class _menupageState extends State<menupage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: Colors.brown[800],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => menupage()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Selamat Datang di Halaman Penjualan!',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProdukTab()),
+                );
+              },
+              child: Text('Pergi ke Produk'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.brown[800],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 class ProdukTab extends StatefulWidget {
+  const ProdukTab({super.key});
+
   @override
-  _ProdukTabState createState() => _ProdukTabState();
+  State<ProdukTab> createState() => _ProdukTabState();
 }
 
 class _ProdukTabState extends State<ProdukTab> {
-  List<Produk> produkList = [];
+  List<Map<String, dynamic>> produk = [];
   bool isLoading = true;
 
   @override
@@ -43,44 +87,32 @@ class _ProdukTabState extends State<ProdukTab> {
   }
 
   Future<void> fetchProduk() async {
-  setState(() {
-    isLoading = true;
-  });
-  try {
-    final response = await Supabase.instance.client.from('produk').select().execute();
-    if (response.error == null && response.data != null) {
-      setState(() {
-        produkList = (response.data as List)
-            .map((item) => Produk.fromJson(item))
-            .toList();
-      });
-    } else {
-      print('Error fetching produk: ${response.error?.message}');
-    }
-  } catch (e) {
-    print('Error fetching produk: $e');
-  } finally {
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
-  }
-}
-
-
-  Future<void> deleteProduk(String ProdukID) async {
     try {
       final response = await Supabase.instance.client
           .from('produk')
-          .delete()
-          .eq('ProdukID', ProdukID);
-
-      if (response.error == null) {
-        fetchProduk();  // Refresh the list after deletion
-      } else {
-        print('Error deleting produk: ${response.error?.message}');
-      }
+          .select()
+          .order('ProdukID', ascending: true);
+      setState(() {
+        produk = List<Map<String, dynamic>>.from(response);
+        isLoading = false;
+      });
     } catch (e) {
-      print('Error deleting produk: $e');
+      print('Error: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> deleteProduk(int id) async {
+    try {
+      await Supabase.instance.client.from('produk').delete().eq('ProdukID', id);
+      fetchProduk(); 
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
@@ -90,103 +122,100 @@ class _ProdukTabState extends State<ProdukTab> {
       appBar: AppBar(
         title: Text('Daftar Produk'),
         backgroundColor: Colors.brown[800],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => menupage(title: 'Home Penjualan')),
+            );
+          },
+        ),
       ),
       body: isLoading
           ? Center(
-              child: LoadingAnimationWidget.twoRotatingArc(color: Colors.brown, size: 30),
+              child: LoadingAnimationWidget.twoRotatingArc(
+                  color: Colors.brown, size: 30),
             )
-          : produkList.isEmpty
+          : produk.isEmpty
               ? Center(
                   child: Text(
                     'Tidak ada produk',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 )
-              : ListView.builder(
+              : GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, crossAxisSpacing: 12),
                   padding: EdgeInsets.all(8),
-                  itemCount: produkList.length,
+                  itemCount: produk.length,
                   itemBuilder: (context, index) {
-                    final produk = produkList[index];
-                    return Card(
-                      elevation: 4,
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              produk.NamaProduk,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Harga: Rp ${produk.Harga} | Stok: ${produk.Stok}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12,
-                              ),
-                              textAlign: TextAlign.justify,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                    final prd = produk[index];
+                    return InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Produk: ${prd['NamaProduk']}'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Color(0xFF8D6E63)),
-                                  onPressed: () {
-                                    final produk = produkList[index];
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => UpdateProdukPage(produk: produk),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Color(0xFF8D6E63)),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Text('Hapus Produk'),
-                                          content: const Text('Apakah Anda yakin ingin menghapus produk ini?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: const Text('Batal'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                deleteProduk(produk.ProdukID);
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Hapus'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
+                                Text('Harga: ${prd['Harga']}'),
+                                Text('Stok: ${prd['Stok']}'),
                               ],
                             ),
-                          ],
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('Tutup'))
+                            ],
+                          ),
+                        );
+                      },
+                      child: Card(
+                        elevation: 4,
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                prd['NamaProduk'] ?? 'Nama Tidak Tersedia',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                prd['Harga']?.toString() ?? 'Harga Tidak Tersedia',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                prd['Stok']?.toString() ?? 'Stok Tidak Tersedia',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => InsertProdukPage()),
+            MaterialPageRoute(builder: (context) => AddProdukPage()),
           );
+
+          if (result == true) {
+            fetchProduk();
+          }
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.brown[600],
