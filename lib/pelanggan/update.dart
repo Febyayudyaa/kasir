@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kasirr/homepenjualan.dart';
-import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditPelanggan extends StatefulWidget {

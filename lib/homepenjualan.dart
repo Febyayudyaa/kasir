@@ -91,6 +91,12 @@ class _menupageState extends State<menupage> {
             MaterialPageRoute(builder: (context) => ProdukTab()),
             );
         }
+         else if (label == 'Penjualan') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PenjualanTab()),
+        );
+      }
       },
       style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[800]),
       child: Text(
@@ -99,4 +105,6 @@ class _menupageState extends State<menupage> {
       ),
     );
   }
+  
+  
 }

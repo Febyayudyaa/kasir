@@ -25,7 +25,7 @@ class _PenjualanTabState extends State<PenjualanTab> {
       isLoading = true;
     });
     try {
-      final response = await Supabase.instance.client.from('penjualan').select();
+      final response = await Supabase.instance.client.from('penjualan').select().order('PenjualanId', ascending: true);
       setState(() {
         penjualan = List<Map<String, dynamic>>.from(response);
         isLoading = false;
@@ -39,17 +39,40 @@ class _PenjualanTabState extends State<PenjualanTab> {
   }
 
   Future<void> deleteBarang(int id) async {
-    try {
-      await Supabase.instance.client.from('penjualan').delete().eq('PenjualanID', id);
-      fetchPenjualan();
-    } catch (e) {
-      print('Error deleting barang: $e');
+  try {
+    final response = await Supabase.instance.client
+        .from('penjualan')
+        .delete()
+        .eq('PenjualanID', id);
+
+    if (response.error == null) {
+      print('Berhasil menghapus penjualan dengan ID $id');
+      fetchPenjualan(); 
+    } else {
+      print('Gagal menghapus penjualan: ${response.error!.message}');
     }
+  } catch (e) {
+    print('Error saat menghapus penjualan: $e');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Daftar Penjualan'),
+        backgroundColor: Colors.brown[800],
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(
+              context,
+            );
+          },
+        )
+      ),
       body: isLoading
           ? Center(
               child: LoadingAnimationWidget.twoRotatingArc(color: Colors.brown, size: 30),
@@ -109,9 +132,9 @@ class _PenjualanTabState extends State<PenjualanTab> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                                    icon: const Icon(Icons.edit, color: Colors.brown),
                                     onPressed: () {
-                                      final PenjualanID = jual['PenjualanID'] ?? 0; // Pastikan ini sesuai dengan kolom di database
+                                      final PenjualanID = jual['PenjualanID'] ?? 0; 
                                       if (PenjualanID != 0) {
                                         Navigator.push(
                                           context,
@@ -125,7 +148,7 @@ class _PenjualanTabState extends State<PenjualanTab> {
                                     },
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    icon: const Icon(Icons.delete, color: Colors.brown),
                                     onPressed: () {
                                       showDialog(
                                         context: context,
@@ -166,6 +189,8 @@ class _PenjualanTabState extends State<PenjualanTab> {
 
         },
         child: Icon(Icons.add),
+        backgroundColor: Colors.brown[800],
+        foregroundColor: Colors.white,
       ),
     );
   }

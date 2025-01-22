@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:kasirr/homepenjualan.dart';
-import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
-class UpdateProdukPage extends StatefulWidget {
+class EditProduk extends StatefulWidget {
   final int ProdukID;
-  const UpdateProdukPage({super.key, required this.ProdukID});
+
+  const EditProduk({super.key, required this.ProdukID});
 
   @override
-  State<UpdateProdukPage> createState() => _UpdateProdukPageState();
+  State<EditProduk> createState() => _EditProdukState();
 }
 
-class _UpdateProdukPageState extends State<UpdateProdukPage> {
+class _EditProdukState extends State<EditProduk> {
   final _NamaProduk = TextEditingController();
   final _Harga = TextEditingController();
   final _Stok = TextEditingController();
@@ -21,84 +20,121 @@ class _UpdateProdukPageState extends State<UpdateProdukPage> {
   @override
   void initState() {
     super.initState();
-    fetchProduk();
+    _loadProdukData();
   }
 
-  Future<void> fetchProduk() async {
-    try {
-      final data = await Supabase.instance.client
-          .from('produk')
-          .select()
-          .eq('ProdukID', widget.ProdukID)
-          .single();
-      setState(() {
-        _NamaProduk.text = data['NamaProduk'] ?? '';
-        _Harga.text = data['Harga']?.toString() ?? '';
-        _Stok.text = data['Stok']?.toString() ?? '';
-      });
-    } catch (error) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $error')));
-    }
+  Future<void> _loadProdukData() async {
+    final data = await Supabase.instance.client
+        .from('produk')
+        .select()
+        .eq('ProdukID', widget.ProdukID)
+        .single();
+
+    setState(() {
+      _NamaProduk.text = data['NamaProduk'] ?? '';
+      _Harga.text = data['Harga']?.toString() ?? ''; 
+      _Stok.text = data['Stok']?.toString() ?? '';   
+    });
   }
 
-    Future<void> updateProduk() async {
+  Future<void> updateProduk() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        final response = await Supabase.instance.client.from('produk').update({
-          'NamaProduk': _NamaProduk.text,
-          'Harga': double.tryParse(_Harga.text) ?? 0,
-          'Stok': int.tryParse(_Stok.text) ?? 0,
-        }).eq('ProdukID', widget.ProdukID);
+      double? harga = double.tryParse(_Harga.text);  
+      int? stok = int.tryParse(_Stok.text);         
 
-        if (response.error == null) {
-          Navigator.pop(context, true); 
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.error!.message}')),
-          );
-        }
-      } catch (e) {
+      if (harga == null || stok == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Harga atau Stok tidak valid')),
         );
+        return;
       }
+
+      await Supabase.instance.client.from('produk').update({
+        'NamaProduk': _NamaProduk.text,
+        'Harga': harga,  
+        'Stok': stok,    
+      }).eq('ProdukID', widget.ProdukID);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => menupage(title: 'Home Penjualan')), 
+      );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Update Produk')),
+      appBar: AppBar(
+        title: const Text('Edit Produk'),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _NamaProduk,
-                decoration: InputDecoration(labelText: 'Nama Produk'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Nama produk tidak boleh kosong' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Produk',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama tidak boleh kosong';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _Harga,
-                decoration: InputDecoration(labelText: 'Harga'),
-                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Harga',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Harga tidak boleh kosong';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Masukkan harga yang valid';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _Stok,
-                decoration: InputDecoration(labelText: 'Stok'),
+                decoration: const InputDecoration(
+                  labelText: 'Stok',
+                  border: OutlineInputBorder(),
+                ),
                 keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Stok tidak boleh kosong';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Masukkan angka yang valid untuk stok';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: updateProduk,
-                child: Text('Update Produk'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown[600], 
+                ),
+                child: const Text(
+                  'Update',
+                  style: TextStyle(color: Colors.white), 
+                ),
               ),
             ],
           ),

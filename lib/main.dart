@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login.dart';  
+import 'login.dart';
+import 'register.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://ejsimgpbrinksndwaann.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqc2ltZ3Bicmlua3NuZHdhYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzU0MTgsImV4cCI6MjA1MTkxMTQxOH0.99-o0u0wykWd3vSO_7kp6nDgKg3zFmvMDWFgzSQnNmw', 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqc2ltZ3Bicmlua3NuZHdhYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzU0MTgsImV4cCI6MjA1MTkxMTQxOH0.99-o0u0wykWd3vSO_7kp6nDgKg3zFmvMDWFgzSQnNmw',
   );
   runApp(MyApp());
 }
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.purple),
-      home: HomePage(),
+      home: HomePage(), 
     );
   }
 }
@@ -50,7 +51,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   _buildButton(context, 'Login', LoginPage()),
                   SizedBox(height: 20),
-                  _buildButton(context, 'Register', RegisterPage()),
+                  _buildButton(context, 'Register', RegisterPage()),  // Perhatikan di sini, RegisterPage dipanggil
                 ],
               ),
             ),
@@ -64,7 +65,10 @@ class HomePage extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => page),  // Navigasi ke RegisterPage atau LoginPage
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.brown[800],
           padding: EdgeInsets.symmetric(vertical: 16),
@@ -72,16 +76,6 @@ class HomePage extends StatelessWidget {
         ),
         child: Text(text, style: TextStyle(color: Colors.white)),
       ),
-    );
-  }
-}
-
-class RegisterPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Register'), backgroundColor: Colors.white),
-      body: Center(child: Text('Registration Page')),
     );
   }
 }

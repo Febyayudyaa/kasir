@@ -94,7 +94,7 @@ class _ProdukTabState extends State<ProdukTab> {
         print('Error: $e');
       }
     }
-    
+
   Future<void> fetchProduk() async {
     setState(() {
       isLoading = true;
@@ -127,148 +127,148 @@ class _ProdukTabState extends State<ProdukTab> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Daftar Produk'),
-        backgroundColor: Colors.brown[800],
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(
-              context,
-            );
-          },
-        ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Daftar Produk Cookies'),
+      backgroundColor: Colors.brown[800],
+      foregroundColor: Colors.white,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(
+            context,
+          );
+        },
       ),
-      body: isLoading
-          ? Center(
-              child: LoadingAnimationWidget.twoRotatingArc(
-                  color: Colors.brown, size: 30),
-            )
-          : produk.isEmpty
-              ? Center(
-                  child: Text(
-                    'Tidak ada produk',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                )
-              : GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, crossAxisSpacing: 12),
-                  padding: EdgeInsets.all(8),
-                  itemCount: produk.length,
-                  itemBuilder: (context, index) {
-                    final prd = produk[index];
-                    return InkWell(
-                      onTap: () async {
-                        int jumlah = 1;
-                        final stok = prd['Stok'] ?? 0;
-
-                        await showDialog(
-                          context: context,
-                          builder: (context) {
-                            return StatefulBuilder(
-                              builder: (context, setState) {
-                                return AlertDialog(
-                                  title: Text('Produk: ${prd['NamaProduk']}'),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text('Harga: ${prd['Harga']}'),
-                                      Text('Stok Tersedia: $stok'),
-                                      SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(Icons.remove,
-                                                color: Colors.brown[800]),
-                                            onPressed: jumlah > 1
-                                                ? () {
-                                                    setState(() {
-                                                      jumlah--;
-                                                    });
-                                                  }
-                                                : null,
-                                          ),
-                                          Text(
-                                            '$jumlah',
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(Icons.add,
-                                                color: Colors.brown[800]),
-                                            onPressed: jumlah < stok
-                                                ? () {
-                                                    setState(() {
-                                                      jumlah++;
-                                                    });
-                                                  }
-                                                : null,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context),
-                                      child: Text('Batal'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context, jumlah);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.brown[800],
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: Text('Tambahkan'),
+    ),
+    body: isLoading
+        ? Center(
+            child: LoadingAnimationWidget.twoRotatingArc(
+                color: Colors.brown, size: 30),
+          )
+        : produk.isEmpty
+            ? Center(
+                child: Text(
+                  'Tidak ada produk',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              )
+            : ListView.builder(
+                padding: EdgeInsets.all(8),
+                itemCount: produk.length,
+                itemBuilder: (context, index) {
+                  final prd = produk[index];
+                  return InkWell(
+                    onTap: () async {
+                      int jumlah = 1;
+                      final stok = prd['Stok'] ?? 0;
+                      await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              return AlertDialog(
+                                title: Text('Produk: ${prd['NamaProduk']}'),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Harga: ${prd['Harga']}'),
+                                    Text('Stok Tersedia: $stok'),
+                                    SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.remove,
+                                              color: Colors.brown[800]),
+                                          onPressed: jumlah > 1
+                                              ? () {
+                                                  setState(() {
+                                                    jumlah--;
+                                                  });
+                                                }
+                                              : null,
+                                        ),
+                                        Text(
+                                          '$jumlah',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.add,
+                                              color: Colors.brown[800]),
+                                          onPressed: jumlah < stok
+                                              ? () {
+                                                  setState(() {
+                                                    jumlah++;
+                                                  });
+                                                }
+                                              : null,
+                                        ),
+                                      ],
                                     ),
                                   ],
-                                );
-                              },
-                            );
-                          },
-                        );
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context),
+                                    child: Text('Batal',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, jumlah);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.brown[800],
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: Text('Tambahkan'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      );
 
-                        if (jumlah > 0 && jumlah <= stok) {
-                          print('Produk: ${prd['NamaProduk']} - Jumlah: $jumlah');
-                        }
-                      },
-                      child: Card(
-                        elevation: 4,
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      if (jumlah > 0 && jumlah <= stok) {
+                        print('Produk: ${prd['NamaProduk']} - Jumlah: $jumlah');
+                      }
+                    },
+                    child: Card(
+                      elevation: 4,
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 120,
                         child: Padding(
-                          padding: EdgeInsets.all(12),
+                          padding: EdgeInsets.all(4),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 prd['NamaProduk'] ?? 'Nama Tidak Tersedia',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 20),
+                                    fontWeight: FontWeight.bold, fontSize: 18),
                               ),
                               SizedBox(height: 4),
                               Text(
-                                prd['Harga']?.toString() ??
-                                    'Harga Tidak Tersedia',
+                                prd['Harga']?.toString() ?? 'Harga Tidak Tersedia',
                                 style: TextStyle(fontSize: 16),
                               ),
-                              SizedBox(height: 8),
+                              SizedBox(height: 2),
                               Text(
-                                prd['Stok']?.toString() ??
-                                    'Stok Tidak Tersedia',
-                                style: TextStyle(fontSize: 16),
+                                prd['Stok']?.toString() ?? 'Stok Tidak Tersedia',
+                                style: TextStyle(fontSize: 12),
                               ),
                               Spacer(),
                               Row(
@@ -281,14 +281,13 @@ class _ProdukTabState extends State<ProdukTab> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              UpdateProdukPage(
-                                                  ProdukID: prd['ProdukID']),
+                                              EditProduk(ProdukID: prd['ProdukID']),
                                         ),
                                       );
                                     },
                                   ),
                                   IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    icon: Icon(Icons.delete, color: Colors.brown),
                                     onPressed: () {
                                       showDialog(
                                         context: context,
@@ -299,14 +298,14 @@ class _ProdukTabState extends State<ProdukTab> {
                                                 'Apakah Anda yakin ingin menghapus produk ini?'),
                                             actions: [
                                               TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(context),
-                                                child: Text('Batal'),
+                                                onPressed: () => Navigator.pop(context),
+                                                child: Text('Batal',
+                                                style: TextStyle(color: Colors.black),
+                                              ),
                                               ),
                                               TextButton(
                                                 onPressed: () {
-                                                  deleteProduk(
-                                                      prd['ProdukID']);
+                                                  deleteProduk(prd['ProdukID']);
                                                   Navigator.pop(context);
                                                 },
                                                 child: Text('Hapus'),
@@ -323,9 +322,10 @@ class _ProdukTabState extends State<ProdukTab> {
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
