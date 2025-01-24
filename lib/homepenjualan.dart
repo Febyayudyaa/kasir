@@ -65,7 +65,7 @@ class _menupageState extends State<menupage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: ['Detail Jual', 'Makanan', 'Penjualan', 'Customer']
+              children: ['Detail Penjualan', 'Produk', 'Penjualan', 'Pelanggan']
                   .map((label) => _buildCategoryButton(label, context))
                   .toList(),
             ),
@@ -78,12 +78,12 @@ class _menupageState extends State<menupage> {
   ElevatedButton _buildCategoryButton(String label, BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        if (label == 'Customer') {
+        if (label == 'Pelanggan') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => PelangganTab()),
           );
-        } else if (label == 'Makanan') {
+        } else if (label == 'Produk') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ProdukTab()),
@@ -93,7 +93,7 @@ class _menupageState extends State<menupage> {
             context,
             MaterialPageRoute(builder: (context) => PenjualanTab()),
           );
-        } else if (label == 'Detail Jual') {
+        } else if (label == 'Detail Penjualan') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => DetailPenjualanTab()),

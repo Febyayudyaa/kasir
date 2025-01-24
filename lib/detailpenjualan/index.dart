@@ -18,22 +18,22 @@ class _DetailPenjualanTabState extends State<DetailPenjualanTab> {
   }
 
   Future<void> fetchDetailPenjualan() async {
-    setState(() => isLoading = true);
-    try {
-      final response = await Supabase.instance.client
-          .from('detailpenjualan')
-          .select()
-          .order('DetailID', ascending: true);
+  setState(() => isLoading = true);
+  try {
+    final response = await Supabase.instance.client
+        .from('detailpenjualan')
+        .select()
+        .order('DetailID', ascending: true);
 
-      setState(() {
-        detailPenjualan = List<Map<String, dynamic>>.from(response);
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error fetching detail penjualan: $e');
-      setState(() => isLoading = false);
-    }
+    setState(() {
+      detailPenjualan = List<Map<String, dynamic>>.from(response);
+      isLoading = false;
+    });
+  } catch (e) {
+    print('Error fetching detail penjualan: $e');
+    setState(() => isLoading = false);
   }
+}
 
   Future<void> deleteDetailPenjualan(int id) async {
     try {

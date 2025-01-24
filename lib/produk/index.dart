@@ -1,6 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:kasirr/produk/insert.dart';
+import 'package:kasirr/detailpenjualan/index.dart';
 import 'package:kasirr/produk/update.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() {
   runApp(MaterialApp(
     title: 'Flutter Demo',
-    theme: ThemeData(primarySwatch: Colors.brown),
+    theme: ThemeData(
+      primarySwatch: Colors.brown,
+    ),
     home: MenuPage(title: 'Home Produk'),
   ));
 }
@@ -36,7 +37,7 @@ class _MenuPageState extends State<MenuPage> {
           children: [
             Text(
               'Selamat Datang di Halaman Pembelian Produk!',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange), // Warna teks
             ),
             ElevatedButton(
               onPressed: () {
@@ -45,15 +46,83 @@ class _MenuPageState extends State<MenuPage> {
                   MaterialPageRoute(builder: (context) => ProdukTab()),
                 );
               },
-              child: Text('Pergi ke Produk'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.brown[800],
+                backgroundColor: Colors.orange, // Warna tombol
                 foregroundColor: Colors.white,
               ),
+              child: Text('Pergi ke Produk'),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TambahProdukDialog extends StatefulWidget {
+  @override
+  State<_TambahProdukDialog> createState() => _TambahProdukDialogState();
+}
+
+class _TambahProdukDialogState extends State<_TambahProdukDialog> {
+  final _NamaController = TextEditingController();
+  final _HargaController = TextEditingController();
+  final _StokController = TextEditingController();
+
+  @override
+  void dispose() {
+    _NamaController.dispose();
+    _HargaController.dispose();
+    _StokController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tambah Produk'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _NamaController,
+            decoration: InputDecoration(labelText: 'Nama Produk'),
+          ),
+          TextField(
+            controller: _HargaController,
+            decoration: InputDecoration(labelText: 'Harga'),
+            keyboardType: TextInputType.number,
+          ),
+          TextField(
+            controller: _StokController,
+            decoration: InputDecoration(labelText: 'Stok'),
+            keyboardType: TextInputType.number,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Batal'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_NamaController.text.isNotEmpty &&
+                _HargaController.text.isNotEmpty &&
+                _StokController.text.isNotEmpty) {
+              Navigator.pop(
+                context,
+                {
+                  'nama': _NamaController.text,
+                  'harga': double.tryParse(_HargaController.text),
+                  'stok': int.tryParse(_StokController.text),
+                },
+              );
+            }
+          },
+          child: Text('Tambah'),
+        ),
+      ],
     );
   }
 }
@@ -87,15 +156,9 @@ class _ProdukTabState extends State<ProdukTab> {
           .select()
           .order('ProdukID', ascending: true);
 
-      if (response == null || response.isEmpty) {
-        setState(() {
-          produk = [];
-        });
-      } else {
-        setState(() {
-          produk = List<Map<String, dynamic>>.from(response);
-        });
-      }
+      setState(() {
+        produk = List<Map<String, dynamic>>.from(response);
+      });
     } catch (e) {
       setState(() {
         errorMessage = 'Gagal memuat data produk. Silakan coba lagi.';
@@ -124,11 +187,10 @@ class _ProdukTabState extends State<ProdukTab> {
       appBar: AppBar(
         title: Text('Daftar Produk Cookies'),
         backgroundColor: Colors.brown[800],
+        foregroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: isLoading
@@ -140,7 +202,7 @@ class _ProdukTabState extends State<ProdukTab> {
               ? Center(
                   child: Text(
                     errorMessage!,
-                    style: TextStyle(fontSize: 18, color: Colors.red),
+                    style: TextStyle(fontSize: 18, color: Colors.red), // Pesan error
                   ),
                 )
               : produk.isEmpty
@@ -155,69 +217,7 @@ class _ProdukTabState extends State<ProdukTab> {
                       itemCount: produk.length,
                       itemBuilder: (context, index) {
                         final prd = produk[index];
-                        return Card(
-                          elevation: 4,
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            title: Text(prd['NamaProduk'] ?? 'Nama Tidak Tersedia'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Harga: ${prd['Harga']}'),
-                                Text('Stok: ${prd['Stok']}'),
-                              ],
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.edit, color: Colors.brown),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditProduk(ProdukID: prd['ProdukID']),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.brown),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: Text('Konfirmasi'),
-                                          content: Text(
-                                              'Apakah Anda yakin ingin menghapus produk ini?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: Text('Batal'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                deleteProduk(prd['ProdukID']);
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text('Hapus'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
+                        return _buildProdukCard(context, prd);
                       },
                     ),
       floatingActionButton: FloatingActionButton(
@@ -228,13 +228,11 @@ class _ProdukTabState extends State<ProdukTab> {
           );
           if (result != null) {
             try {
-              await Supabase.instance.client.from('produk').insert([
-                {
-                  'NamaProduk': result['nama'],
-                  'Harga': result['harga'],
-                  'Stok': result['stok'],
-                }
-              ]);
+              await Supabase.instance.client.from('produk').insert([{
+                'NamaProduk': result['nama'],
+                'Harga': result['harga'],
+                'Stok': result['stok'],
+              }]);
               fetchProduk();
             } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -248,76 +246,194 @@ class _ProdukTabState extends State<ProdukTab> {
       ),
     );
   }
-}
 
-class _TambahProdukDialog extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  String? nama;
-  double? harga;
-  int? stok;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Tambah Produk Baru'),
-      content: Form(
-        key: _formKey,
-        child: Column(
+  Widget _buildProdukCard(BuildContext context, Map<String, dynamic> prd) {
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        onTap: () => _showOrderDialog(context, prd),
+        title: Text(prd['NamaProduk'] ?? 'Nama Tidak Tersedia'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Harga: ${prd['Harga']}'),
+            Text('Stok: ${prd['Stok']}'),
+          ],
+        ),
+        trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildTextField(
-              label: 'Nama Produk',
-              onChanged: (value) => nama = value,
-              validator: (value) =>
-                  value!.isEmpty ? 'Nama produk tidak boleh kosong' : null,
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.brown),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditProduk(ProdukID: prd['ProdukID']),
+                  ),
+                );
+              },
             ),
-            _buildTextField(
-              label: 'Harga',
-              onChanged: (value) => harga = double.tryParse(value),
-              validator: (value) =>
-                  double.tryParse(value!) == null ? 'Harga tidak valid' : null,
-            ),
-            _buildTextField(
-              label: 'Stok',
-              onChanged: (value) => stok = int.tryParse(value),
-              validator: (value) =>
-                  int.tryParse(value!) == null ? 'Stok tidak valid' : null,
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.brown),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text('Konfirmasi'),
+                      content: Text('Apakah Anda yakin ingin menghapus produk ini?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('Batal'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            deleteProduk(prd['ProdukID']);
+                            Navigator.pop(context);
+                          },
+                          child: Text('Hapus'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Batal'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              Navigator.pop(context, {'nama': nama, 'harga': harga, 'stok': stok});
-            }
-          },
-          child: Text('Simpan'),
-        ),
-      ],
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    required void Function(String) onChanged,
-    required String? Function(String?) validator,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
+  void _showOrderDialog(BuildContext context, Map<String, dynamic> prd) {
+  int jumlahPesanan = 1;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Center(
+          child: Text(
+            'Pesan Produk',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ),
-        onChanged: onChanged,
-        validator: validator,
-      ),
-    );
-  }
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Text('Pesan ${prd['NamaProduk']}'),
+                ),
+                Center(
+                  child: Text('Harga: ${prd['Harga']}'),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.remove, color: Colors.black),
+                      onPressed: () {
+                        setState(() {
+                          if (jumlahPesanan > 1) {
+                            jumlahPesanan--;
+                          }
+                        });
+                      },
+                    ),
+                    Text(
+                      '$jumlahPesanan',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.add, color: Colors.black),
+                      onPressed: () {
+                        setState(() {
+                          if (jumlahPesanan < (prd['Stok'] ?? 0)) {
+                            jumlahPesanan++;
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Batal',
+              style: TextStyle(color: Colors.brown),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              if (jumlahPesanan > 0 && jumlahPesanan <= (prd['Stok'] ?? 0)) {
+                try {
+                  // Menyimpan pesanan ke tabel pesanan
+                  final response = await Supabase.instance.client.from('pesanan').insert([{
+                    'ProdukID': prd['ProdukID'],
+                    'Jumlah': jumlahPesanan,
+                    'TotalHarga': jumlahPesanan * (prd['Harga'] ?? 0),
+                  }]).select().single(); // Mengambil data yang baru ditambahkan
+
+                  // Mendapatkan ID pesanan yang baru saja ditambahkan
+                  final pesananID = response['id']; // Pastikan untuk menyesuaikan dengan struktur data Anda
+
+                  // Menyimpan detail pesanan ke tabel detailpenjualan
+                  await Supabase.instance.client.from('detailpenjualan').insert([{
+                    'PenjualanID': pesananID,
+                    'ProdukID': prd['ProdukID'],
+                    'JumlahProduk': jumlahPesanan,
+                    'Subtotal': jumlahPesanan * (prd['Harga'] ?? 0),
+                  }]);
+
+                  // Mengupdate stok produk
+                  await Supabase.instance.client
+                      .from('produk')
+                      .update({'Stok': (prd['Stok'] ?? 0) - jumlahPesanan})
+                      .eq('ProdukID', prd['ProdukID']);
+
+                  fetchProduk();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Pesanan berhasil dibuat!')),
+                  );
+
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DetailPenjualanTab()));
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal membuat pesanan: $e')),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Jumlah pesanan tidak valid!')),
+                );
+              }
+            },
+            icon: Icon(
+              Icons.shopping_cart,
+              color: Colors.brown,
+            ),
+            label: Text('Pesan', style: TextStyle(color: Colors.brown)),
+          ),
+        ],
+      );
+    },
+  );
+}
 }
