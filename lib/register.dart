@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'homepenjualan.dart'; // Pastikan mengimpor MenuPage dengan benar
+import 'package:kasirr/main.dart';
+import 'homepenjualan.dart'; 
 
 void main() async {
   runApp(MyApp());
@@ -25,13 +26,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _roleController = TextEditingController();
 
-  // Fungsi untuk registrasi dan lanjut ke halaman home
   Future<void> _register() async {
     final username = _usernameController.text;
     final password = _passwordController.text;
     final role = _roleController.text;
 
-    // Cek jika form tidak kosong
     if (username.isEmpty || password.isEmpty || role.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Harap isi semua field')),
@@ -46,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => MenuPage(title: 'Home Penjualan'), 
+        builder: (context) => menupage(title: 'Home Penjualan')
       ),
     );
   }

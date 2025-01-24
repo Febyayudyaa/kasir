@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kasirr/penjualan/insert.dart';
 import 'package:kasirr/penjualan/update.dart';
 import 'package:kasirr/homepenjualan.dart';
+import 'package:kasirr/produk/index.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
@@ -160,18 +161,19 @@ class _PenjualanTabState extends State<PenjualanTab> {
                                               TextButton(
                                                 onPressed: () => Navigator.pop(context),
                                                 child: const Text('Batal'),
+                                                
                                               ),
                                               TextButton(
                                                 onPressed: () {
                                                   deleteBarang(jual['PenjualanID']);
-                                                  Navigator.pop(context);
+                                                  Navigator.pop(context); 
                                                 },
                                                 child: const Text('Hapus'),
                                               ),
                                             ],
                                           );
                                         },
-                                      );
+                                      ); 
                                     },
                                   ),
                                 ],
@@ -183,15 +185,21 @@ class _PenjualanTabState extends State<PenjualanTab> {
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () { 
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransaksi()));
+              floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProdukTab()),
+            );
 
-        },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.brown[800],
-        foregroundColor: Colors.white,
-      ),
+            if (result == true) {
+              fetchPenjualan(); 
+            }
+          },
+          child: Icon(Icons.add),
+          backgroundColor: Colors.brown[800],
+          foregroundColor: Colors.white,
+        ),
     );
   }
 }

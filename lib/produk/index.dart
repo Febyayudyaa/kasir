@@ -4,26 +4,25 @@ import 'package:kasirr/produk/insert.dart';
 import 'package:kasirr/produk/update.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:kasirr/homepenjualan.dart';
 
 void main() {
   runApp(MaterialApp(
     title: 'Flutter Demo',
     theme: ThemeData(primarySwatch: Colors.brown),
-    home: menupage(title: 'Home Produk'),
+    home: MenuPage(title: 'Home Produk'),
   ));
 }
 
-class menupage extends StatefulWidget {
+class MenuPage extends StatefulWidget {
   final String title;
 
-  const menupage({super.key, required this.title});
+  const MenuPage({super.key, required this.title});
 
   @override
-  State<menupage> createState() => _menupageState();
+  State<MenuPage> createState() => _MenuPageState();
 }
 
-class _menupageState extends State<menupage> {
+class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +68,7 @@ class ProdukTab extends StatefulWidget {
 class _ProdukTabState extends State<ProdukTab> {
   List<Map<String, dynamic>> produk = [];
   bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
@@ -76,270 +76,247 @@ class _ProdukTabState extends State<ProdukTab> {
     fetchProduk();
   }
 
-      Future<void> addProduk(String nama, double harga, int stok) async {
-      try {
-        final response = await Supabase.instance.client.from('produk').insert([
-          {
-            'NamaProduk': nama,
-            'Harga': harga,
-            'Stok': stok,
-          }
-        ]);
-        if (response.error == null) {
-          print('Produk berhasil ditambahkan');
-        } else {
-          print('Error menambahkan produk: ${response.error!.message}');
-        }
-      } catch (e) {
-        print('Error: $e');
-      }
-    }
-
   Future<void> fetchProduk() async {
     setState(() {
       isLoading = true;
+      errorMessage = null;
     });
     try {
       final response = await Supabase.instance.client
           .from('produk')
           .select()
           .order('ProdukID', ascending: true);
-      setState(() {
-        produk = List<Map<String, dynamic>>.from(response);
-        isLoading = false;
-      });
+
+      if (response == null || response.isEmpty) {
+        setState(() {
+          produk = [];
+        });
+      } else {
+        setState(() {
+          produk = List<Map<String, dynamic>>.from(response);
+        });
+      }
     } catch (e) {
-      print('Error: $e');
+      setState(() {
+        errorMessage = 'Gagal memuat data produk. Silakan coba lagi.';
+      });
+    } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  
   Future<void> deleteProduk(int id) async {
     try {
       await Supabase.instance.client.from('produk').delete().eq('ProdukID', id);
       fetchProduk();
     } catch (e) {
-      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menghapus produk: $e')),
+      );
     }
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Daftar Produk Cookies'),
-      backgroundColor: Colors.brown[800],
-      foregroundColor: Colors.white,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back),
-        onPressed: () {
-          Navigator.pop(
-            context,
-          );
-        },
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Daftar Produk Cookies'),
+        backgroundColor: Colors.brown[800],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-    ),
-    body: isLoading
-        ? Center(
-            child: LoadingAnimationWidget.twoRotatingArc(
-                color: Colors.brown, size: 30),
-          )
-        : produk.isEmpty
-            ? Center(
-                child: Text(
-                  'Tidak ada produk',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              )
-            : ListView.builder(
-                padding: EdgeInsets.all(8),
-                itemCount: produk.length,
-                itemBuilder: (context, index) {
-                  final prd = produk[index];
-                  return InkWell(
-                    onTap: () async {
-                      int jumlah = 1;
-                      final stok = prd['Stok'] ?? 0;
-                      await showDialog(
-                        context: context,
-                        builder: (context) {
-                          return StatefulBuilder(
-                            builder: (context, setState) {
-                              return AlertDialog(
-                                title: Text('Produk: ${prd['NamaProduk']}'),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('Harga: ${prd['Harga']}'),
-                                    Text('Stok Tersedia: $stok'),
-                                    SizedBox(height: 16),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(Icons.remove,
-                                              color: Colors.brown[800]),
-                                          onPressed: jumlah > 1
-                                              ? () {
-                                                  setState(() {
-                                                    jumlah--;
-                                                  });
-                                                }
-                                              : null,
-                                        ),
-                                        Text(
-                                          '$jumlah',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.add,
-                                              color: Colors.brown[800]),
-                                          onPressed: jumlah < stok
-                                              ? () {
-                                                  setState(() {
-                                                    jumlah++;
-                                                  });
-                                                }
-                                              : null,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context),
-                                    child: Text('Batal',
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pop(context, jumlah);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.brown[800],
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    child: Text('Tambahkan'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      );
-
-                      if (jumlah > 0 && jumlah <= stok) {
-                        print('Produk: ${prd['NamaProduk']} - Jumlah: $jumlah');
-                      }
-                    },
-                    child: Card(
-                      elevation: 4,
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+      body: isLoading
+          ? Center(
+              child: LoadingAnimationWidget.twoRotatingArc(
+                  color: Colors.brown, size: 30),
+            )
+          : errorMessage != null
+              ? Center(
+                  child: Text(
+                    errorMessage!,
+                    style: TextStyle(fontSize: 18, color: Colors.red),
+                  ),
+                )
+              : produk.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Tidak ada produk.',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 120,
-                        child: Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                prd['NamaProduk'] ?? 'Nama Tidak Tersedia',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                prd['Harga']?.toString() ?? 'Harga Tidak Tersedia',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                prd['Stok']?.toString() ?? 'Stok Tidak Tersedia',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              Spacer(),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit, color: Colors.brown),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              EditProduk(ProdukID: prd['ProdukID']),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.brown),
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: Text('Konfirmasi'),
-                                            content: Text(
-                                                'Apakah Anda yakin ingin menghapus produk ini?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(context),
-                                                child: Text('Batal',
-                                                style: TextStyle(color: Colors.black),
-                                              ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  deleteProduk(prd['ProdukID']);
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text('Hapus'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.all(8),
+                      itemCount: produk.length,
+                      itemBuilder: (context, index) {
+                        final prd = produk[index];
+                        return Card(
+                          elevation: 4,
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
+                          child: ListTile(
+                            title: Text(prd['NamaProduk'] ?? 'Nama Tidak Tersedia'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Harga: ${prd['Harga']}'),
+                                Text('Stok: ${prd['Stok']}'),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Colors.brown),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            EditProduk(ProdukID: prd['ProdukID']),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.brown),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: Text('Konfirmasi'),
+                                          content: Text(
+                                              'Apakah Anda yakin ingin menghapus produk ini?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: Text('Batal'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                deleteProduk(prd['ProdukID']);
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Hapus'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddProdukPage()),
+          final result = await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (context) => _TambahProdukDialog(),
           );
-
-          if (result == true) {
-            fetchProduk();
+          if (result != null) {
+            try {
+              await Supabase.instance.client.from('produk').insert([
+                {
+                  'NamaProduk': result['nama'],
+                  'Harga': result['harga'],
+                  'Stok': result['stok'],
+                }
+              ]);
+              fetchProduk();
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Gagal menambahkan produk: $e')),
+              );
+            }
           }
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.brown[600],
-        foregroundColor: Colors.white,
+      ),
+    );
+  }
+}
+
+class _TambahProdukDialog extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+  String? nama;
+  double? harga;
+  int? stok;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Tambah Produk Baru'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTextField(
+              label: 'Nama Produk',
+              onChanged: (value) => nama = value,
+              validator: (value) =>
+                  value!.isEmpty ? 'Nama produk tidak boleh kosong' : null,
+            ),
+            _buildTextField(
+              label: 'Harga',
+              onChanged: (value) => harga = double.tryParse(value),
+              validator: (value) =>
+                  double.tryParse(value!) == null ? 'Harga tidak valid' : null,
+            ),
+            _buildTextField(
+              label: 'Stok',
+              onChanged: (value) => stok = int.tryParse(value),
+              validator: (value) =>
+                  int.tryParse(value!) == null ? 'Stok tidak valid' : null,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Batal'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, {'nama': nama, 'harga': harga, 'stok': stok});
+            }
+          },
+          child: Text('Simpan'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required void Function(String) onChanged,
+    required String? Function(String?) validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+        ),
+        onChanged: onChanged,
+        validator: validator,
       ),
     );
   }

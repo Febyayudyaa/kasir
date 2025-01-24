@@ -4,6 +4,7 @@ import 'login.dart';
 import 'pelanggan/index.dart';
 import 'produk/index.dart';
 import 'penjualan/index.dart';
+import 'detailpenjualan/index.dart';  
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,9 +58,6 @@ class _menupageState extends State<menupage> {
             ];
           },
         ),
-        actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: () {}),
-        ],
       ),
       body: Column(
         children: [
@@ -89,14 +87,18 @@ class _menupageState extends State<menupage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ProdukTab()),
-            );
+          );
+        } else if (label == 'Penjualan') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PenjualanTab()),
+          );
+        } else if (label == 'Detail Jual') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DetailPenjualanTab()),
+          );
         }
-         else if (label == 'Penjualan') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PenjualanTab()),
-        );
-      }
       },
       style: ElevatedButton.styleFrom(backgroundColor: Colors.brown[800]),
       child: Text(
@@ -105,6 +107,4 @@ class _menupageState extends State<menupage> {
       ),
     );
   }
-  
-  
 }

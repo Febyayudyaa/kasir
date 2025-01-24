@@ -24,23 +24,27 @@ class _EditProdukState extends State<EditProduk> {
   }
 
   Future<void> _loadProdukData() async {
-    final data = await Supabase.instance.client
-        .from('produk')
-        .select()
-        .eq('ProdukID', widget.ProdukID)
-        .single();
+    try {
+      final data = await Supabase.instance.client
+          .from('produk')
+          .select()
+          .eq('ProdukID', widget.ProdukID)
+          .single();
 
-    setState(() {
-      _NamaProduk.text = data['NamaProduk'] ?? '';
-      _Harga.text = data['Harga']?.toString() ?? ''; 
-      _Stok.text = data['Stok']?.toString() ?? '';   
-    });
+      setState(() {
+        _NamaProduk.text = data['NamaProduk'] ?? '';
+        _Harga.text = data['Harga']?.toString() ?? '';
+        _Stok.text = data['Stok']?.toString() ?? '';   
+      });
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 
   Future<void> updateProduk() async {
     if (_formKey.currentState!.validate()) {
-      double? harga = double.tryParse(_Harga.text);  
-      int? stok = int.tryParse(_Stok.text);         
+      double? harga = double.tryParse(_Harga.text);
+      int? stok = int.tryParse(_Stok.text);
 
       if (harga == null || stok == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,17 +53,20 @@ class _EditProdukState extends State<EditProduk> {
         return;
       }
 
-      await Supabase.instance.client.from('produk').update({
-        'NamaProduk': _NamaProduk.text,
-        'Harga': harga,  
-        'Stok': stok,    
-      }).eq('ProdukID', widget.ProdukID);
+      try {
+        await Supabase.instance.client.from('produk').update({
+          'NamaProduk': _NamaProduk.text,
+          'Harga': harga,
+          'Stok': stok,
+        }).eq('ProdukID', widget.ProdukID);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => menupage(title: 'Home Penjualan')), 
-      );
+        Navigator.pop(context, true); // Kembali setelah update produk
+      } catch (e) {
+        print('Error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengupdate produk')),
+        );
+      }
     }
   }
 
@@ -78,9 +85,10 @@ class _EditProdukState extends State<EditProduk> {
             children: [
               TextFormField(
                 controller: _NamaProduk,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nama Produk',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(color: Colors.red),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -89,14 +97,15 @@ class _EditProdukState extends State<EditProduk> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextFormField(
                 controller: _Harga,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Harga',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(color: Colors.red),
                 ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Harga tidak boleh kosong';
@@ -107,12 +116,13 @@ class _EditProdukState extends State<EditProduk> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextFormField(
                 controller: _Stok,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Stok',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(color: Colors.red),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -120,21 +130,15 @@ class _EditProdukState extends State<EditProduk> {
                     return 'Stok tidak boleh kosong';
                   }
                   if (int.tryParse(value) == null) {
-                    return 'Masukkan angka yang valid untuk stok';
+                    return 'Masukkan stok yang valid';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               ElevatedButton(
                 onPressed: updateProduk,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown[600], 
-                ),
-                child: const Text(
-                  'Update',
-                  style: TextStyle(color: Colors.white), 
-                ),
+                child: Text('Simpan'),
               ),
             ],
           ),
