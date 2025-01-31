@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/detailpenjualan/index.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
-import 'admin/pelanggan/index.dart';
+import 'package:kasirr/admin/pelanggan/index.dart';
 import 'package:kasirr/admin/produk/index.dart';
 import 'package:kasirr/admin/penjualan/index.dart';
 
@@ -92,17 +93,17 @@ class _MenuPageState extends State<MenuPage> {
         } else if (label == 'Produk') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ProdukTab()),
+            MaterialPageRoute(builder: (context) => IndexProduk()),
           );
         } else if (label == 'Penjualan') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PenjualanTab()),
+            MaterialPageRoute(builder: (context) => IndexPenjualan()),
           );
         } else if (label == 'Detail Penjualan') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => DetailPenjualanTab(prd: prd)), 
+            MaterialPageRoute(builder: (context) => IndexDetailJual(prd: prd)), 
           );
         }
       },

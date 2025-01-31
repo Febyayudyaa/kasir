@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kasirr/admin/registrasi/insertregistrasi.dart';
 import 'package:kasirr/admin/registrasi/updateregistrasi.dart';
-import 'package:kasirr/homepenjualan.dart';
-import 'package:kasirr/main.dart';
+import 'package:kasirr/petugas/homepenjualan.dart';
+import 'package:kasirr/petugas/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class IndexRegistrasi extends StatefulWidget {

@@ -1,72 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/homepenjualan.dart';
+import 'package:kasirr/petugas/homepenjualan.dart';
+import 'package:kasirr/petugas/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class EditProduk extends StatefulWidget {
+class UpdateProduk extends StatefulWidget {
   final int ProdukID;
 
-  const EditProduk({super.key, required this.ProdukID});
+  const UpdateProduk({super.key, required this.ProdukID});
 
   @override
-  State<EditProduk> createState() => _EditProdukState();
+  State<UpdateProduk> createState() => _UpdateProdukState();
 }
 
-class _EditProdukState extends State<EditProduk> {
-  final _NamaProduk = TextEditingController();
-  final _Harga = TextEditingController();
-  final _Stok = TextEditingController();
+class _UpdateProdukState extends State<UpdateProduk> {
+  final _nmprdk = TextEditingController();
+  final _harga = TextEditingController();
+  final _stok = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    _loadProdukData();
+    _loadProduklangganData();
   }
 
-  Future<void> _loadProdukData() async {
-    try {
-      final data = await Supabase.instance.client
-          .from('produk')
-          .select()
-          .eq('ProdukID', widget.ProdukID)
-          .single();
+  // Fungsi untuk memuat data produk berdasarkan ID
+  Future<void> _loadProduklangganData() async {
+    final data = await Supabase.instance.client
+        .from('produk')
+        .select()
+        .eq('ProdukID', widget.ProdukID)
+        .single();
 
-      setState(() {
-        _NamaProduk.text = data['NamaProduk'] ?? '';
-        _Harga.text = data['Harga']?.toString() ?? '';
-        _Stok.text = data['Stok']?.toString() ?? '';   
-      });
-    } catch (e) {
-      print('Error: $e');
-    }
+    setState(() {
+      _nmprdk.text = data['NamaProduk'] ?? '';
+      _harga.text = data['Harga']?.toString() ?? '';
+      _stok.text = data['Stok']?.toString() ?? '';
+    });
   }
 
-  Future<void> updateProduk() async {
+  Future<void> updateProduklanggan() async {
     if (_formKey.currentState!.validate()) {
-      double? harga = double.tryParse(_Harga.text);
-      int? stok = int.tryParse(_Stok.text);
+      await Supabase.instance.client.from('produk').update({
+        'NamaProduk': _nmprdk.text,
+        'Harga': _harga.text,
+        'Stok': _stok.text,
+      }).eq('ProdukID', widget.ProdukID);
 
-      if (harga == null || stok == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Harga atau Stok tidak valid')),
-        );
-        return;
-      }
-
-      try {
-        await Supabase.instance.client.from('produk').update({
-          'NamaProduk': _NamaProduk.text,
-          'Harga': harga,
-          'Stok': stok,
-        }).eq('ProdukID', widget.ProdukID);
-
-        Navigator.pop(context, true); // Kembali setelah update produk
-      } catch (e) {
-        print('Error: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengupdate produk')),
-        );
-      }
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+        (route) => false, 
+      );
     }
   }
 
@@ -74,9 +59,18 @@ class _EditProdukState extends State<EditProduk> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Produk'),
+        title: const Text('Edit Produk', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFFFA7070),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -84,11 +78,10 @@ class _EditProdukState extends State<EditProduk> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
-                controller: _NamaProduk,
-                decoration: InputDecoration(
+                controller: _nmprdk,
+                decoration: const InputDecoration(
                   labelText: 'Nama Produk',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(color: Colors.red),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -97,50 +90,51 @@ class _EditProdukState extends State<EditProduk> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
-                controller: _Harga,
-                decoration: InputDecoration(
+                controller: _harga,
+                decoration: const InputDecoration(
                   labelText: 'Harga',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(color: Colors.red),
                 ),
-                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Harga tidak boleh kosong';
                   }
-                  if (double.tryParse(value) == null) {
-                    return 'Masukkan harga yang valid';
-                  }
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
-                controller: _Stok,
-                decoration: InputDecoration(
+                controller: _stok,
+                decoration: const InputDecoration(
                   labelText: 'Stok',
                   border: OutlineInputBorder(),
-                  errorStyle: TextStyle(color: Colors.red),
                 ),
-                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Stok tidak boleh kosong';
                   }
-                  if (int.tryParse(value) == null) {
-                    return 'Masukkan stok yang valid';
-                  }
                   return null;
                 },
               ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: updateProduk,
-                child: Text('Simpan'),
-              ),
-            ],
+              const SizedBox(height: 20,),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                 const  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: updateProduklanggan,
+                    child: Text(
+                      'Update',
+                      style: TextStyle(color: Colors.white),),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: const Color(0xFFFA7070),
+                    ),
+                  )
+                ],
+              )            ],
           ),
         ),
       ),

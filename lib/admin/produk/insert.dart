@@ -1,57 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/petugas/homepenjualan.dart';
+import 'package:kasirr/petugas/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AddProdukPage extends StatefulWidget {
-  const AddProdukPage({super.key});
-
+class InsertProduk extends StatefulWidget {
   @override
-  State<AddProdukPage> createState() => _AddProdukPageState();
+  _InsertProdukState createState() => _InsertProdukState();
 }
 
-class _AddProdukPageState extends State<AddProdukPage> {
-  final _NamaProdukController = TextEditingController();
-  final _HargaController = TextEditingController();
-  final _StokController = TextEditingController();
+class _InsertProdukState extends State<InsertProduk> {
   final _formKey = GlobalKey<FormState>();
+  final _namaController = TextEditingController();
+  final _hargaController = TextEditingController();
+  final _stokController = TextEditingController();
 
-  @override
-  void dispose() {
-    _NamaProdukController.dispose();
-    _HargaController.dispose();
-    _StokController.dispose();
-    super.dispose();
-  }
+  final SupabaseClient supabase = Supabase.instance.client;
+  
+  Future<void> _saveData() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  Future<void> tambahProduk() async {
-    if (_formKey.currentState!.validate()) {
-      final nama = _NamaProdukController.text.trim();
-      final harga = double.tryParse(_HargaController.text) ?? 0;
-      final stok = int.tryParse(_StokController.text) ?? 0;
+    final nama = _namaController.text;
+    final harga = _hargaController.text;
+    final stok = _stokController.text;
 
-      try {
-        final response = await Supabase.instance.client
-            .from('produk')
-            .insert([
-              {
-                'NamaProduk': nama,
-                'Harga': harga,
-                'Stok': stok,
-              }
-            ])
-            .select()
-            .single();
+    try {
+      final response = await supabase.from('produk').insert({
+        'NamaProduk': nama,
+        'Harga': harga,
+        'Stok': stok,
+      }).select();
 
-        if (response != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Produk berhasil ditambahkan!')),
-          );
-          Navigator.pop(context, true); 
-        }
-      } catch (e) {
+      if (response.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambahkan produk: $e')),
+          const SnackBar(content: Text('Data berhasil disimpan!')),
         );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+      } else {
+        throw Exception('Gagal menyimpan data.');
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kesalahan: $e')),
+      );
     }
   }
 
@@ -59,70 +49,79 @@ class _AddProdukPageState extends State<AddProdukPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tambah Produk'),
+        title: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
+        elevation: 0,
+        backgroundColor: const Color(0xFFFA7070),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context, MaterialPageRoute(builder: (context) => InsertProduk()));
+          },
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _NamaProdukController,
-                decoration: InputDecoration(
-                  labelText: 'Nama Produk',
-                  border: OutlineInputBorder(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _namaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama Produk',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty ? 'Nama tidak boleh kosong' : null,
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Nama produk tidak boleh kosong';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _HargaController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Harga',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _hargaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Harga',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty ? 'Harga tidak boleh kosong' : null,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Harga tidak boleh kosong';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Harga harus berupa angka';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _StokController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Stok',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _stokController,
+                  decoration: const InputDecoration(
+                    labelText: 'Stok',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) => value == null || value.isEmpty ? 'Stok tidak boleh kosong' : null,
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Stok tidak boleh kosong';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Stok harus berupa angka';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: tambahProduk,
-                child: Text('Tambah'),
-              ),
-            ],
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _saveData,
+                  child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFA7070),
+                    borderRadius: BorderRadius.circular(30)
+                  ),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
