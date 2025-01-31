@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/petugas/homepenjualan.dart';
-import 'package:kasirr/petugas/main.dart';
+import 'package:kasirr/homepenjualan.dart';
+import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UpdateProduk extends StatefulWidget {
@@ -24,7 +24,6 @@ class _UpdateProdukState extends State<UpdateProduk> {
     _loadProduklangganData();
   }
 
-  // Fungsi untuk memuat data produk berdasarkan ID
   Future<void> _loadProduklangganData() async {
     final data = await Supabase.instance.client
         .from('produk')
@@ -60,17 +59,11 @@ class _UpdateProdukState extends State<UpdateProduk> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Produk', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFFFA7070),
+        backgroundColor: Colors.brown[800], 
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white, 
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -118,23 +111,19 @@ class _UpdateProdukState extends State<UpdateProduk> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20,),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                 const  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: updateProduklanggan,
-                    child: Text(
-                      'Update',
-                      style: TextStyle(color: Colors.white),),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        backgroundColor: const Color(0xFFFA7070),
-                    ),
-                  )
-                ],
-              )            ],
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: updateProduklanggan,
+                child: const Text(
+                  'Update',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  backgroundColor: Colors.brown[800], 
+                ),
+              )
+            ],
           ),
         ),
       ),

@@ -31,16 +31,14 @@ class _PembelianprodukState extends State<Pembelianproduk> {
         'PenjualanID': PenjualanID,
         'JumlahProduk': JumlahProduk,
         'Subtotal': Subtotal,
-      });
+      }).select();
 
-      if (response.error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pesanan berhasil disimpan!')),
-        );
-        Navigator.pop(context);
-      } else {
-        throw response.error!;
-      }
+      print('Response dari Supabase: $response'); // Debugging
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pesanan berhasil disimpan!')),
+      );
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal menyimpan pesanan: $e')),
@@ -53,7 +51,7 @@ class _PembelianprodukState extends State<Pembelianproduk> {
     final produk = widget.produk;
     final harga = produk['Harga'] ?? 0;
     final ProdukID = produk['ProdukID'] ?? 0;
-    final PenjualanID = 1; // Placeholder untuk ID penjualan
+    final PenjualanID = 1; 
 
     return Scaffold(
       appBar: AppBar(
@@ -61,17 +59,11 @@ class _PembelianprodukState extends State<Pembelianproduk> {
           produk['NamaProduk'] ?? 'Detail Produk',
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFFFA7070),
+        backgroundColor: Colors.brown[800],
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         child: Center(
           child: Card(
             margin: const EdgeInsets.all(20),
@@ -102,7 +94,7 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                     children: [
                       IconButton(
                         onPressed: () => updateJumlahProduk(harga, -1),
-                        icon: const Icon(Icons.remove_circle, size: 32, color: Colors.red),
+                        icon: const Icon(Icons.remove_circle, size: 32, color: Colors.brown),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -113,7 +105,7 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                       ),
                       IconButton(
                         onPressed: () => updateJumlahProduk(harga, 1),
-                        icon: const Icon(Icons.add_circle, size: 32, color: Colors.green),
+                        icon: const Icon(Icons.add_circle, size: 32, color: Colors.brown),
                       ),
                     ],
                   ),
@@ -123,19 +115,23 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: JumlahProduk > 0
-                              ? () async {
-                                  await insertDetailPenjualan(
-                                    ProdukID,
-                                    PenjualanID,
-                                    JumlahProduk,
-                                    Subtotal,
-                                  );
-                                } : () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => InsertProduk()));
-                                },
+                          onPressed: () async {
+                            if (JumlahProduk > 0) {
+                              await insertDetailPenjualan(
+                                ProdukID,
+                                PenjualanID,
+                                JumlahProduk,
+                                Subtotal,
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => InsertProduk()),
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFA7070),
+                            backgroundColor:Colors.brown[800],
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(

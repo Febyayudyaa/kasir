@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kasirr/admin/penjualan/index.dart';
-import 'package:kasirr/petugas/homepenjualan.dart';
-import 'package:kasirr/petugas/main.dart';
+import 'package:kasirr/homepenjualan.dart';
+import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UpdatePenjualan extends StatefulWidget {

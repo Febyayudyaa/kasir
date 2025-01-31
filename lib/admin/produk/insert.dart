@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/petugas/homepenjualan.dart';
-import 'package:kasirr/petugas/main.dart';
+import 'package:kasirr/homepenjualan.dart';
+import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class InsertProduk extends StatefulWidget {
@@ -51,7 +51,7 @@ class _InsertProdukState extends State<InsertProduk> {
       appBar: AppBar(
         title: const Text('Tambah Produk', style: TextStyle(color: Colors.white)),
         elevation: 0,
-        backgroundColor: const Color(0xFFFA7070),
+        backgroundColor: Colors.brown[800],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
@@ -60,13 +60,7 @@ class _InsertProdukState extends State<InsertProduk> {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -108,7 +102,7 @@ class _InsertProdukState extends State<InsertProduk> {
                   width: double.infinity,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFA7070),
+                    color: Colors.brown[800],
                     borderRadius: BorderRadius.circular(30)
                   ),
                   child: const Text(

@@ -171,7 +171,7 @@ class _PelangganTabState extends State<PelangganTab> {
           );
         },
         child: Icon(Icons.add),
-        backgroundColor: Colors.brown[600],
+        backgroundColor: Colors.brown[800],
         foregroundColor: Colors.white,
       ),
     );

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class IndexDetailJual extends StatefulWidget {
-  const IndexDetailJual({super.key});
+  final Map<String, dynamic> prd;
+  const IndexDetailJual({Key? key, required this.prd}) : super(key: key);
 
   @override
   State<IndexDetailJual> createState() => _IndexDetailJualState();
