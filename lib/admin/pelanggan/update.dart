@@ -49,7 +49,7 @@ Future<void> updatePelanggan() async {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  menupage(title: 'Home Penjualan')), 
+                  MenuPage(title: 'Home Penjualan')), 
         );
      
   }

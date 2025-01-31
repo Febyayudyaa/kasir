@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/detailpenjualan/produk/update.dart';
 import 'package:kasirr/detailpenjualan/index.dart';
-import 'package:kasirr/produk/update.dart';
+import 'package:kasirr/admin/produk/update.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -413,7 +414,7 @@ class _ProdukTabState extends State<ProdukTab> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DetailPenjualanTab()));
+                    MaterialPageRoute(builder: (context) => DetailPenjualanTab(prd: prd)));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Gagal membuat pesanan: $e')),

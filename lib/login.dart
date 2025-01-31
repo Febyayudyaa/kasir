@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  menupage(title: 'Home Penjualan')), 
+                  MenuPage(title: 'Home Penjualan')), 
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

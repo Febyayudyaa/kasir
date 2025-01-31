@@ -1,36 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
-import 'pelanggan/index.dart';
-import 'produk/index.dart';
-import 'penjualan/index.dart';
-import 'detailpenjualan/index.dart';  
+import 'admin/pelanggan/index.dart';
+import 'package:kasirr/admin/produk/index.dart';
+import 'package:kasirr/admin/penjualan/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
-    url: 'https://ejsimgpbrinksndwaann.supabase.co',
+     url: 'https://ejsimgpbrinksndwaann.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqc2ltZ3Bicmlua3NuZHdhYW5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYzMzU0MTgsImV4cCI6MjA1MTkxMTQxOH0.99-o0u0wykWd3vSO_7kp6nDgKg3zFmvMDWFgzSQnNmw',
-  );
+   );
 
   runApp(MaterialApp(
     title: 'Flutter Demo',
     theme: ThemeData(primarySwatch: Colors.blue),
-    home: menupage(title: 'Home Penjualan'),
+    home: MenuPage(title: 'Home Penjualan'),
   ));
 }
 
-class menupage extends StatefulWidget {
+class MenuPage extends StatefulWidget {
   final String title;
-  menupage({Key? key, required this.title}) : super(key: key);
+  MenuPage({Key? key, required this.title}) : super(key: key);
 
   @override
-  _menupageState createState() => _menupageState();
+  _MenuPageState createState() => _MenuPageState();
 }
 
-class _menupageState extends State<menupage> {
+class _MenuPageState extends State<MenuPage> {
   String? selectedOrderType;
   Map<String, int> cart = {}; 
+
+  Map<String, dynamic> prd = {
+    'ProdukID': 1,
+    'NamaProduk': 'Produk A',
+    'Harga': 100000,
+    'Stok': 50,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +102,7 @@ class _menupageState extends State<menupage> {
         } else if (label == 'Detail Penjualan') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => DetailPenjualanTab()),
+            MaterialPageRoute(builder: (context) => DetailPenjualanTab(prd: prd)), 
           );
         }
       },

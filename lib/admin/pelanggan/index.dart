@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/pelanggan/insert.dart';
-import 'package:kasirr/pelanggan/update.dart';
+import 'package:kasirr/admin/pelanggan/insert.dart';
+import 'package:kasirr/admin/pelanggan/update.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 

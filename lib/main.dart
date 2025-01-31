@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login.dart';
-import 'register.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +50,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   _buildButton(context, 'Login', LoginPage()),
                   SizedBox(height: 20),
-                  _buildButton(context, 'Register', RegisterPage()),  // Perhatikan di sini, RegisterPage dipanggil
+                 // _buildButton(context, 'Register', ),  // Perhatikan di sini, RegisterPage dipanggil
                 ],
               ),
             ),
