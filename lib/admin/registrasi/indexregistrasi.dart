@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/home_admin.dart';
 import 'package:kasirr/admin/registrasi/insertregistrasi.dart';
 import 'package:kasirr/admin/registrasi/updateregistrasi.dart';
 import 'package:kasirr/homepenjualan.dart';
@@ -34,7 +35,7 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
 
   Future<void> deleteRegis(int id) async {
     try {
-      await Supabase.instance.client.from('user').delete().eq('UserID', id);
+      await Supabase.instance.client.from('user').delete().eq('id', id);
       fetchRegis();
     } catch (e) {
       print('Error deleting user: $e');
@@ -47,19 +48,22 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.brown[800],
-        title: Text('Data User', style: TextStyle(color: Colors.white),),
+        title: Text('Data User', style: TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           color: Colors.white,
           onPressed: () {
-            Navigator.pop(context, MaterialPageRoute(builder: (context) => HomePage()));
+            Navigator.push(
+              context
+              , MaterialPageRoute(builder: (context)=> HomeAdmin()));
+
           },
         ),
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
+            colors: [Color(0xFFFFFFFF), Color(0xFFFFFFFF)], 
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -97,8 +101,7 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
                                 children: [
                                   const SizedBox(height: 5),
                                   Text(
-                                    langgan['Username'] ??
-                                        'Username tidak tersedia',
+                                    langgan['username'] ?? 'Username tidak tersedia',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
@@ -106,18 +109,16 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    langgan['Password'] ??
-                                        'Password Tidak tersedia',
+                                    langgan['password'] ?? 'Password Tidak tersedia',
                                     style: const TextStyle(
                                       fontStyle: FontStyle.italic,
                                       fontSize: 15,
-                                      color: Colors.grey,
+                                      color: Colors.black,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    langgan['Role'] ??
-                                        'Tidak tersedia',
+                                    langgan['role'] ?? 'Tidak tersedia',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
@@ -138,14 +139,13 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
                                           color: Colors.brown,
                                           size: 28),
                                       onPressed: () {
-                                        final UserID =
-                                            langgan['UserID'] ?? 0;
-                                        if (UserID != 0) {
+                                        final userId = langgan['id'] ?? 0;
+                                        if (userId != 0) {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  UpdateRegistrasi(UserID: UserID),
+                                                  UpdateRegistrasi(id: userId),
                                             ),
                                           );
                                         } else {
@@ -174,8 +174,10 @@ class _IndexRegistrasiState extends State<IndexRegistrasi> {
                                                 ),
                                                 TextButton(
                                                   onPressed: () {
-                                                    deleteRegis(
-                                                        langgan['UserID']);
+                                                    final userid = langgan['id'];
+                                                    if (userid != null) {
+                                                      deleteRegis(userid);
+                                                    }
                                                     Navigator.pop(context);
                                                   },
                                                   child: const Text('Hapus'),

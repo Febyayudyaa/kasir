@@ -50,8 +50,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   _buildButton(context, 'Login', LoginPage()),
                   SizedBox(height: 20),
-                 // _buildButton(context, 'Register', ),  // Perhatikan di sini, RegisterPage dipanggil
-                ],
+                ]
               ),
             ),
           ],
@@ -66,7 +65,7 @@ class HomePage extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => page),  // Navigasi ke RegisterPage atau LoginPage
+          MaterialPageRoute(builder: (_) => page),  
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.brown[800],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/homepenjualan.dart';
-import 'package:kasirr/main.dart';
+import 'package:kasirr/admin/produk/index.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UpdateProduk extends StatefulWidget {
@@ -21,36 +20,52 @@ class _UpdateProdukState extends State<UpdateProduk> {
   @override
   void initState() {
     super.initState();
-    _loadProduklangganData();
+    _loadProdukData();
   }
 
-  Future<void> _loadProduklangganData() async {
-    final data = await Supabase.instance.client
-        .from('produk')
-        .select()
-        .eq('ProdukID', widget.ProdukID)
-        .single();
+  Future<void> _loadProdukData() async {
+    try {
+      final data = await Supabase.instance.client
+          .from('produk')
+          .select()
+          .eq('ProdukID', widget.ProdukID)
+          .single();
 
-    setState(() {
-      _nmprdk.text = data['NamaProduk'] ?? '';
-      _harga.text = data['Harga']?.toString() ?? '';
-      _stok.text = data['Stok']?.toString() ?? '';
-    });
-  }
-
-  Future<void> updateProduklanggan() async {
-    if (_formKey.currentState!.validate()) {
-      await Supabase.instance.client.from('produk').update({
-        'NamaProduk': _nmprdk.text,
-        'Harga': _harga.text,
-        'Stok': _stok.text,
-      }).eq('ProdukID', widget.ProdukID);
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-        (route) => false, 
+      setState(() {
+        _nmprdk.text = data['NamaProduk'] ?? '';
+        _harga.text = data['Harga']?.toString() ?? '';
+        _stok.text = data['Stok']?.toString() ?? '';
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil data: $e')),
       );
+    }
+  }
+
+  Future<void> updateProduk() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await Supabase.instance.client.from('produk').update({
+          'NamaProduk': _nmprdk.text,
+          'Harga': double.tryParse(_harga.text) ?? 0,
+          'Stok': int.tryParse(_stok.text) ?? 0,
+        }).eq('ProdukID', widget.ProdukID);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data berhasil diperbarui!')),
+        );
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => IndexProduk()),
+          (route) => false,
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kesalahan: $e')),
+        );
+      }
     }
   }
 
@@ -59,16 +74,19 @@ class _UpdateProdukState extends State<UpdateProduk> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Produk', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.brown[800], 
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.brown[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-      body: Container(
-        color: Colors.white, 
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 controller: _nmprdk,
@@ -76,12 +94,7 @@ class _UpdateProdukState extends State<UpdateProduk> {
                   labelText: 'Nama Produk',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama tidak boleh kosong';
-                  }
-                  return null;
-                },
+                validator: (value) => value!.isEmpty ? 'Nama tidak boleh kosong' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -90,10 +103,10 @@ class _UpdateProdukState extends State<UpdateProduk> {
                   labelText: 'Harga',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Harga tidak boleh kosong';
-                  }
+                  if (value!.isEmpty) return 'Harga tidak boleh kosong';
+                  if (double.tryParse(value) == null) return 'Masukkan angka yang valid';
                   return null;
                 },
               ),
@@ -104,25 +117,22 @@ class _UpdateProdukState extends State<UpdateProduk> {
                   labelText: 'Stok',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Stok tidak boleh kosong';
-                  }
+                  if (value!.isEmpty) return 'Stok tidak boleh kosong';
+                  if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
                   return null;
                 },
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: updateProduklanggan,
-                child: const Text(
-                  'Update',
-                  style: TextStyle(color: Colors.white),
-                ),
+                onPressed: updateProduk,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: Colors.brown[800], 
+                  backgroundColor: Colors.brown[800],
                 ),
-              )
+                child: const Text('Update', style: TextStyle(color: Colors.white)),
+              ),
             ],
           ),
         ),

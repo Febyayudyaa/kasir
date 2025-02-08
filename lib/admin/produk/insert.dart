@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/homepenjualan.dart';
-import 'package:kasirr/main.dart';
+import 'package:flutter/services.dart'; // Import for TextInputFormatter
+import 'package:kasirr/admin/produk/index.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class InsertProduk extends StatefulWidget {
@@ -15,7 +15,7 @@ class _InsertProdukState extends State<InsertProduk> {
   final _stokController = TextEditingController();
 
   final SupabaseClient supabase = Supabase.instance.client;
-  
+
   Future<void> _saveData() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -26,15 +26,16 @@ class _InsertProdukState extends State<InsertProduk> {
     try {
       final response = await supabase.from('produk').insert({
         'NamaProduk': nama,
-        'Harga': harga,
-        'Stok': stok,
+        'Harga': double.parse(harga), // Parse the harga to a double
+        'Stok': int.parse(stok), // Parse stok to an integer
       }).select();
 
       if (response.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Data berhasil disimpan!')),
         );
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => IndexProduk()));
       } else {
         throw Exception('Gagal menyimpan data.');
       }
@@ -55,7 +56,7 @@ class _InsertProdukState extends State<InsertProduk> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context, MaterialPageRoute(builder: (context) => InsertProduk()));
+            Navigator.pop(context);
           },
         ),
       ),
@@ -83,6 +84,10 @@ class _InsertProdukState extends State<InsertProduk> {
                     labelText: 'Harga',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.number, // hanya angka pada keyboard
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*')), // hanya angka 
+                  ],
                   validator: (value) => value == null || value.isEmpty ? 'Harga tidak boleh kosong' : null,
                 ),
                 const SizedBox(height: 10),
@@ -92,27 +97,31 @@ class _InsertProdukState extends State<InsertProduk> {
                     labelText: 'Stok',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.number, 
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly, // hanya angka 
+                  ],
                   validator: (value) => value == null || value.isEmpty ? 'Stok tidak boleh kosong' : null,
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _saveData,
                   child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  width: double.infinity,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.brown[800],
-                    borderRadius: BorderRadius.circular(30)
-                  ),
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.brown[800],
+                      borderRadius: BorderRadius.circular(30)
+                    ),
+                    child: const Text(
+                      'Simpan',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
                 ),
               ],
             ),

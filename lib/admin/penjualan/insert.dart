@@ -19,33 +19,34 @@ class _InsertPenjualanState extends State<InsertPenjualan> {
   final SupabaseClient supabase = Supabase.instance.client;
 
   Future<void> _saveData() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    final TanggalPenjualan = _tglController.text;
-    final TotalHarga = _totalController.text;
-    final PelangganID = _plnggnIdController.text;
+  final TanggalPenjualan = DateTime.parse(_tglController.text); 
+  final TotalHarga = double.tryParse(_totalController.text) ?? 0.0;
+  final PelangganID = int.tryParse(_plnggnIdController.text) ?? 0;
 
-    try {
-      final response = await supabase.from('penjualan').insert({
-        'TanggalPenjualan': TanggalPenjualan,
-        'TotalHarga': TotalHarga,
-        'PelangganID': PelangganID,
-      }).select();
+  try {
+    final response = await supabase.from('penjualan').insert({
+      'TanggalPenjualan': TanggalPenjualan.toIso8601String(), 
+      'TotalHarga': TotalHarga,
+      'PelangganID': PelangganID,
+    }).select();
 
-      if (response.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data berhasil disimpan!')),
-        );
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-      } else {
-        throw Exception('Gagal menyimpan data.');
-      }
-    } catch (e) {
+    if (response.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan: $e')),
+        const SnackBar(content: Text('Data berhasil disimpan!')),
       );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+    } else {
+      throw Exception('Gagal menyimpan data.');
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Terjadi kesalahan: $e')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,13 +66,7 @@ class _InsertPenjualanState extends State<InsertPenjualan> {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-             colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,

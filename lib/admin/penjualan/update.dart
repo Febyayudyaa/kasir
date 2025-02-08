@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kasirr/admin/penjualan/index.dart';
 import 'package:kasirr/homepenjualan.dart';
 import 'package:kasirr/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,32 +25,51 @@ class _UpdatePenjualanState extends State<UpdatePenjualan> {
   }
 
   Future<void> _loadPenjualan() async {
-    final data = await Supabase.instance.client
-        .from('penjualan')
-        .select()
-        .eq('PenjualanID', widget.PenjualanID)
-        .single();
+    try {
+      final data = await Supabase.instance.client
+          .from('penjualan')
+          .select()
+          .eq('PenjualanID', widget.PenjualanID)
+          .single();
 
-    setState(() {
-      _tgl.text = data['TanggalPenjualan'] ?? '';
-      _total.text = data['TotalHarga'] ?? '';
-      _plnggnId.text = data['PelangganID']?.toString() ?? '';
-    });
+      setState(() {
+        _tgl.text = data['TanggalPenjualan'] ?? '';
+        _total.text = (data['TotalHarga'] as double?)?.toString() ?? '';
+        _plnggnId.text = data['PelangganID']?.toString() ?? '';
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Data tidak ditemukan: $e')),
+      );
+    }
   }
 
   Future<void> updatePenjualan() async {
     if (_formKey.currentState!.validate()) {
-      // Melakukan update data penjualan ke database
-      await Supabase.instance.client.from('penjualan').update({
-        'TanggalPenjualan': _tgl.text,
-        'TotalHarga': _total.text,
-        'PelangganID': _plnggnId.text,
-      }).eq('PenjualanID', widget.PenjualanID);
+      try {
+        final response = await Supabase.instance.client.from('penjualan').update({
+          'TanggalPenjualan': DateTime.parse(_tgl.text).toIso8601String(),
+          'TotalHarga': double.tryParse(_total.text) ?? 0.0,
+          'PelangganID': int.tryParse(_plnggnId.text) ?? 0,
+        }).eq('PenjualanID', widget.PenjualanID).select();
 
-      Navigator.pushAndRemoveUntil(
-        context, MaterialPageRoute(builder: (context) => HomePage()),
-        (route) => false,
-      );
+        if (response.isNotEmpty) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Update gagal, coba lagi!')),
+          );
+        }
+      } catch (e) {
+        print('Error updating penjualan: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Terjadi kesalahan saat memperbarui data')),
+        );
+      }
     }
   }
 
@@ -64,7 +82,7 @@ class _UpdatePenjualanState extends State<UpdatePenjualan> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context, MaterialPageRoute(builder: (context) => const IndexPenjualan()));
+            Navigator.pop(context);
           },
         ),
       ),
@@ -91,6 +109,11 @@ class _UpdatePenjualanState extends State<UpdatePenjualan> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Tanggal tidak boleh kosong';
+                  }
+                  try {
+                    DateTime.parse(value); // Verifikasi format tanggal
+                  } catch (e) {
+                    return 'Format tanggal tidak valid';
                   }
                   return null;
                 },
@@ -123,23 +146,18 @@ class _UpdatePenjualanState extends State<UpdatePenjualan> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20,),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: updatePenjualan,
-                    child: Text(
-                      'Update',
-                      style: TextStyle(color: Colors.white),),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        backgroundColor: Colors.brown,
-                    ),
-                  )
-                ],
-              )
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: updatePenjualan,
+                child: const Text(
+                  'Update',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  backgroundColor: Colors.brown,
+                ),
+              ),
             ],
           ),
         ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/home_admin.dart';
 import 'package:kasirr/admin/produk/insert.dart';
 import 'package:kasirr/admin/produk/Pembelianproduk.dart';
 import 'package:kasirr/admin/produk/update.dart';
+import 'package:kasirr/homepenjualan.dart'; 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class IndexProduk extends StatefulWidget {
@@ -49,7 +51,9 @@ class _IndexProdukState extends State<IndexProduk> {
         backgroundColor: Colors.brown[800],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeAdmin())); 
+          }, 
         ),
         title: const Text(
           'Menu Produk',
@@ -162,14 +166,26 @@ class _IndexProdukState extends State<IndexProduk> {
                                               actions: [
                                                 TextButton(
                                                   onPressed: () => Navigator.pop(context),
-                                                  child: const Text('Batal'),
+                                                  style: TextButton.styleFrom(
+                                                    backgroundColor: Colors.grey[300], // Warna abu-abu untuk Batal
+                                                  ),
+                                                  child: const Text(
+                                                    'Batal',
+                                                    style: TextStyle(color: Colors.black), // Teks hitam
+                                                  ),
                                                 ),
                                                 TextButton(
                                                   onPressed: () {
                                                     deleteProduk(langgan['ProdukID']);
                                                     Navigator.pop(context);
                                                   },
-                                                  child: const Text('Hapus'),
+                                                  style: TextButton.styleFrom(
+                                                    backgroundColor: Colors.brown[800], // Warna merah untuk Hapus
+                                                  ),
+                                                  child: const Text(
+                                                    'Hapus',
+                                                    style: TextStyle(color: Colors.white), // Teks putih
+                                                  ),
                                                 ),
                                               ],
                                             );

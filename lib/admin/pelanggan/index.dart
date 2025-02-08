@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/home_admin.dart';
 import 'package:kasirr/admin/pelanggan/insert.dart';
 import 'package:kasirr/admin/pelanggan/update.dart';
+import 'package:kasirr/homepenjualan.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
@@ -41,6 +43,7 @@ class _PelangganTabState extends State<PelangganTab> {
     if (id == null) return;
     try {
       await Supabase.instance.client.from('pelanggan').delete().eq('PelangganID', id);
+      // Perbarui daftar pelanggan setelah penghapusan
       fetchPelanggan();
     } catch (e) {
       print('Error deleting pelanggan: $e');
@@ -57,7 +60,10 @@ class _PelangganTabState extends State<PelangganTab> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HomeAdmin())
+            );
           },
         ),
       ),
@@ -121,7 +127,11 @@ class _PelangganTabState extends State<PelangganTab> {
                                           builder: (context) =>
                                               EditPelanggan(PelangganID: pelangganID),
                                         ),
-                                      );
+                                      ).then((value) {
+                                        if (value == true) {
+                                          fetchPelanggan(); // Memperbarui daftar pelanggan
+                                        }
+                                      });
                                     } else {
                                       print('ID pelanggan tidak valid');
                                     }
@@ -139,16 +149,28 @@ class _PelangganTabState extends State<PelangganTab> {
                                               'Apakah Anda yakin ingin menghapus pelanggan ini?'),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: Text('Batal'),
-                                            ),
+                                                  onPressed: () => Navigator.pop(context),
+                                                  style: TextButton.styleFrom(
+                                                    backgroundColor: Colors.grey[300], // Warna abu-abu untuk Batal
+                                                  ),
+                                                  child: const Text(
+                                                    'Batal',
+                                                    style: TextStyle(color: Colors.black), // Teks hitam
+                                                  ),
+                                                ),
                                             TextButton(
-                                              onPressed: () {
-                                                deletePelanggan(langgan['PelangganID'] as int?);
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text('Hapus'),
-                                            ),
+                                                  onPressed: () {
+                                                    deletePelanggan(langgan['PelangganID']);
+                                                    Navigator.pop(context);
+                                                  },
+                                                  style: TextButton.styleFrom(
+                                                    backgroundColor: Colors.brown[800], // Warna merah untuk Hapus
+                                                  ),
+                                                  child: const Text(
+                                                    'Hapus',
+                                                    style: TextStyle(color: Colors.white), // Teks putih
+                                                  ),
+                                                ),
                                           ],
                                         );
                                       },
@@ -164,11 +186,13 @@ class _PelangganTabState extends State<PelangganTab> {
                   },
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          // Setelah pelanggan baru ditambahkan, perbarui daftar pelanggan tanpa perlu kembali ke halaman utama
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => InsertPelangganPage()),
           );
+          fetchPelanggan(); 
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.brown[800],

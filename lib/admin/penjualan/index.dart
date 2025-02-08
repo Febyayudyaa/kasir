@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kasirr/admin/home_admin.dart';
 import 'package:kasirr/admin/penjualan/insert.dart';
 import 'package:kasirr/admin/penjualan/update.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,14 +43,21 @@ class _IndexPenjualanState extends State<IndexPenjualan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+      appBar: AppBar(
+        title: const Text(
+          'Menu Penjualan',
+          style: TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.brown[800],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeAdmin()));
+          },
+        ),
+      ),
+      body: Container(
+        color: Colors.white,
         child: penjualan.isEmpty
             ? const Center(
                 child: Text(
@@ -84,14 +92,12 @@ class _IndexPenjualanState extends State<IndexPenjualan> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    langgan['TotalHarga'] ??
-                                        'Tidak tersedia',
+                                    langgan['TotalHarga']?.toString() ??'Tidak tersedia',
                                     style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 15, color: Colors.grey),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    langgan['PelangganID'] ??
-                                        'Tidak tersedia',
+                                    langgan['PelangganID'] ?.toString()??'Tidak tersedia',
                                     style: const TextStyle( fontWeight: FontWeight.bold, fontSize: 14),
                                     textAlign: TextAlign.justify,
                                   ),

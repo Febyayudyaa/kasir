@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class InsertPelangganPage extends StatefulWidget {
@@ -13,6 +14,7 @@ class _InsertPelangganPageState extends State<InsertPelangganPage> {
   final _nomorTeleponController = TextEditingController();
 
   final SupabaseClient supabase = Supabase.instance.client;
+
   Future<void> _saveData() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -31,6 +33,7 @@ class _InsertPelangganPageState extends State<InsertPelangganPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Data berhasil disimpan!')),
         );
+        // Kirim data baru ke halaman sebelumnya
         Navigator.pop(context, {
           'Nama': nama,
           'Alamat': alamat,
@@ -49,7 +52,12 @@ class _InsertPelangganPageState extends State<InsertPelangganPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tambah Customer')),
+      appBar: AppBar(
+        title: Text('Tambah Pelanggan'),
+        backgroundColor: Colors.brown[800], 
+        foregroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -69,10 +77,28 @@ class _InsertPelangganPageState extends State<InsertPelangganPage> {
               TextFormField(
                 controller: _nomorTeleponController,
                 decoration: InputDecoration(labelText: 'Nomor Telepon'),
-                validator: (value) => value == null || value.isEmpty ? 'Nomor Telepon tidak boleh kosong' : null,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nomor Telepon tidak boleh kosong';
+                  } else if (value.length < 5) {
+                    return 'Nomor telepon tidak valid';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveData, child: Text('Simpan')),
+              ElevatedButton(
+                onPressed: _saveData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown[800], 
+                  foregroundColor: Colors.white, 
+                ),
+                child: Text('Simpan'),
+              ),
             ],
           ),
         ),

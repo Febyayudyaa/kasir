@@ -3,9 +3,9 @@ import 'package:kasirr/admin/registrasi/indexregistrasi.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UpdateRegistrasi extends StatefulWidget {
-  final int UserID;
+  final int id;
 
-  const UpdateRegistrasi({super.key, required this.UserID});
+  const UpdateRegistrasi({super.key, required this.id});
 
   @override
   State<UpdateRegistrasi> createState() => _UpdateRegistrasiState();
@@ -27,23 +27,23 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
     final data = await Supabase.instance.client
         .from('user')
         .select()
-        .eq('UserID', widget.UserID)
+        .eq('id', widget.id)
         .single();
 
     setState(() {
-      _username.text = data['Username'] ?? '';
-      _password.text = data['Password'] ?? '';
-      _role.text = data['Role']?.toString() ?? '';
+      _username.text = data['username'] ?? '';
+      _password.text = data['password'] ?? '';
+      _role.text = data['role']?.toString() ?? '';
     });
   }
 
   Future<void> updateRegistrasi() async {
     if (_formKey.currentState!.validate()) {
       await Supabase.instance.client.from('user').update({
-        'Username': _username.text,
-        'Password': _password.text,
-        'Role': _role.text,
-      }).eq('UserID',widget.UserID);
+        'username': _username.text,
+        'password': _password.text,
+        'role': _role.text,
+      }).eq('id',widget.id);
 
       Navigator.pushAndRemoveUntil(
         context, MaterialPageRoute(builder: (context) => const IndexRegistrasi()),
@@ -68,7 +68,7 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
+            colors: [Color(0xFFFFFFFF), Color(0xFFFFFFFF)],  // Gradasi warna
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -82,7 +82,7 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
               TextFormField(
                 controller: _username,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'username',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -96,7 +96,7 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
               TextFormField(
                 controller: _password,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: 'password',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -110,7 +110,7 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
               TextFormField(
                 controller: _role,
                 decoration: const InputDecoration(
-                  labelText: 'Role',
+                  labelText: 'role',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
@@ -120,7 +120,7 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20,),
+              const SizedBox(height: 20),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -129,14 +129,15 @@ class _UpdateRegistrasiState extends State<UpdateRegistrasi> {
                     onPressed: updateRegistrasi,
                     child: Text(
                       'Update',
-                      style: TextStyle(color: Colors.white),),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        backgroundColor: Colors.brown,
+                      style: TextStyle(color: Colors.white),
                     ),
-                  )
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.brown[800],
+                    ),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),

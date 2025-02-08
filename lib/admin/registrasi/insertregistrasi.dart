@@ -13,7 +13,7 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _roleController = TextEditingController();
+  String? _selectedRole;
 
   final SupabaseClient supabase = Supabase.instance.client;
 
@@ -22,16 +22,16 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
 
     final username = _usernameController.text;
     final password = _passwordController.text;
-    final role = _roleController.text;
+    final role = _selectedRole;
 
     try {
       final response = await supabase.from('user').insert({
-        'Username': username,
-        'Password': password,
-        'Role': role,
+        'username': username,
+        'password': password, 
+        'role': role,
       }).select();
 
-      if (response.isNotEmpty) {
+      if (response != null && response.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Data berhasil disimpan!')),
         );
@@ -50,20 +50,20 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah User',style: TextStyle(color: Colors.white)),
+        title: const Text('Tambah User', style: TextStyle(color: Colors.white)),
         elevation: 0,
         backgroundColor: Colors.brown[800],
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context, MaterialPageRoute(builder: (context) => const InsertRegistrasi()));
+            Navigator.pop(context);
           },
         ),
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF6D4C41), Color(0xFF8D6E63), Color(0xFFA1887F)], 
+            colors: [Color(0xFFFFFFFF), Color(0xFFFFFFFF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -77,7 +77,7 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'username',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) => value == null || value.isEmpty
@@ -88,34 +88,39 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
+                  labelText: 'password',
                   border: OutlineInputBorder(),
                 ),
+                obscureText: true,
                 validator: (value) => value == null || value.isEmpty
                     ? 'Password tidak boleh kosong'
                     : null,
               ),
               const SizedBox(height: 10),
-              TextFormField(
-                controller: _roleController,
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
                 decoration: const InputDecoration(
-                  labelText: 'Role',
+                  labelText: 'role',
                   border: OutlineInputBorder(),
                 ),
+                items: ['Petugas', 'Admin']
+                    .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedRole = value),
                 validator: (value) => value == null || value.isEmpty
                     ? 'Role tidak boleh kosong'
                     : null,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-              onPressed: _saveData,
-              child: Container(
+             ElevatedButton(
+                onPressed: _saveData,
+                child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   width: double.infinity,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.brown,
-                    borderRadius: BorderRadius.circular(30)
+                    color: Colors.brown[800],
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   child: const Text(
                     'Simpan',
@@ -124,7 +129,7 @@ class _InsertRegistrasiState extends State<InsertRegistrasi> {
                       fontSize: 16,
                     ),
                   ),
-                )
+                ),
               ),
             ],
           ),
