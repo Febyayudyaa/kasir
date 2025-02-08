@@ -19,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  // Menambahkan error message untuk username dan password
   String? _usernameError;
   String? _passwordError;
 

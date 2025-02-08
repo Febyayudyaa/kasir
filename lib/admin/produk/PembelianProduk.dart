@@ -13,6 +13,14 @@ class Pembelianproduk extends StatefulWidget {
 class _PembelianprodukState extends State<Pembelianproduk> {
   int JumlahProduk = 0;
   int Subtotal = 0;
+  List<Map<String, dynamic>> pelangganList = [];
+  int? selectedPelangganID;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPelanggan();
+  }
 
   void updateJumlahProduk(int harga, int delta) {
     setState(() {
@@ -22,7 +30,21 @@ class _PembelianprodukState extends State<Pembelianproduk> {
     });
   }
 
-  Future<void> insertDetailPenjualan(int ProdukID, int PenjualanID, int JumlahProduk, int Subtotal) async {
+  Future<void> fetchPelanggan() async {
+    final supabase = Supabase.instance.client;
+    final response = await supabase.from('pelanggan').select('PelangganID, NamaPelanggan');
+
+    if (response.isNotEmpty) {
+      setState(() {
+        pelangganList = List<Map<String, dynamic>>.from(response);
+        if (pelangganList.isNotEmpty) {
+          selectedPelangganID = pelangganList.first['PelangganID'];
+        }
+      });
+    }
+  }
+
+  Future<void> insertDetailPenjualan(int ProdukID, int PenjualanID, int JumlahProduk, int Subtotal, int PelangganID) async {
     final supabase = Supabase.instance.client;
 
     try {
@@ -31,9 +53,10 @@ class _PembelianprodukState extends State<Pembelianproduk> {
         'PenjualanID': PenjualanID,
         'JumlahProduk': JumlahProduk,
         'Subtotal': Subtotal,
+        'PelangganID': PelangganID,
       }).select();
 
-      print('Response dari Supabase: $response'); // Debugging
+      print('Response dari Supabase: $response');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pesanan berhasil disimpan!')),
@@ -51,7 +74,7 @@ class _PembelianprodukState extends State<Pembelianproduk> {
     final produk = widget.produk;
     final harga = produk['Harga'] ?? 0;
     final ProdukID = produk['ProdukID'] ?? 0;
-    final PenjualanID = 1; 
+    final PenjualanID = 1;
 
     return Scaffold(
       appBar: AppBar(
@@ -89,6 +112,26 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(height: 24),
+                  DropdownButtonFormField<int>(
+                    value: selectedPelangganID,
+                    items: pelangganList.map((pelanggan) {
+                      return DropdownMenuItem<int>(
+                        value: pelanggan['PelangganID'],
+                        child: Text(pelanggan['NamaPelanggan']),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPelangganID = value;
+                        print("Pelanggan dipilih: $selectedPelangganID");
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Pilih Pelanggan',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -116,12 +159,13 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (JumlahProduk > 0) {
+                            if (JumlahProduk > 0 && selectedPelangganID != null) {
                               await insertDetailPenjualan(
                                 ProdukID,
                                 PenjualanID,
                                 JumlahProduk,
                                 Subtotal,
+                                selectedPelangganID!,
                               );
                             } else {
                               Navigator.push(
@@ -131,7 +175,7 @@ class _PembelianprodukState extends State<Pembelianproduk> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:Colors.brown[800],
+                            backgroundColor: Colors.brown[800],
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(
